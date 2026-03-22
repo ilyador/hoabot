@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOABot — AI-Powered HOA Management</title>
+<meta name="description" content="AI-powered dues collection, violation tracking, and resident communication for self-managed HOAs. Stop drowning in spreadsheets.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0B0F19;--bg2:#111827;--bg3:#1a2035;--accent:#635BFF;--accent-hover:#5147E5;--green:#3ECF8E;--text:#EDEDED;--text2:#8B8B8E;--text3:#5E5E61;--border:#1f2937;--radius:16px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:16px 0;background:rgba(11,15,25,0.8);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.05)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--text3)}
+.btn-lg{padding:14px 32px;font-size:16px;border-radius:12px}
+
+/* Hero */
+.hero{padding:160px 0 100px;position:relative;text-align:center}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(99,91,255,0.12) 0%,transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(40px,6vw,72px);font-weight:800;letter-spacing:-0.04em;line-height:1.05;margin-bottom:20px;position:relative}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:clamp(16px,2vw,20px);color:var(--text2);max-width:600px;margin:0 auto 32px;line-height:1.6}
+.hero-sub{font-size:13px!important;color:var(--text3)!important;margin-top:12px!important}
+.hero-visual{margin-top:64px;position:relative}
+.hero-visual img{width:100%;max-width:900px;border-radius:16px;border:1px solid var(--border);box-shadow:0 32px 64px rgba(0,0,0,0.4)}
+.hero-visual::before{content:'';position:absolute;inset:-2px;border-radius:18px;background:linear-gradient(180deg,rgba(99,91,255,0.2),transparent 50%);z-index:-1}
+
+/* Pain points */
+.pain{padding:80px 0}
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pain-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center}
+.pain-icon{font-size:32px;margin-bottom:16px}
+.pain-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.pain-card p{font-size:14px;color:var(--text2);line-height:1.5}
+
+/* Features */
+.features{padding:80px 0}
+.section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:12px;text-align:center}
+.section-title{font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-0.03em;text-align:center;margin-bottom:48px}
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.bento-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:border-color 0.15s}
+.bento-card:hover{border-color:rgba(99,91,255,0.3)}
+.bento-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;background:rgba(99,91,255,0.1)}
+.bento-card h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.bento-card p{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* How it works */
+.how{padding:80px 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;position:relative}
+.step{text-align:center}
+.step-num{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin:0 auto 20px}
+.step h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.step p{font-size:14px;color:var(--text2);line-height:1.5}
+
+/* Social proof */
+.proof{padding:60px 0;text-align:center}
+.proof-quote{font-size:clamp(18px,2.5vw,24px);font-weight:500;font-style:italic;color:var(--text2);max-width:650px;margin:0 auto 16px;line-height:1.5}
+.proof-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(62,207,142,0.1);color:var(--green);font-size:14px;font-weight:500;margin-top:24px}
+.proof-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
+
+/* CTA */
+.cta{padding:100px 0;text-align:center;position:relative}
+.cta::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:400px;background:radial-gradient(ellipse,rgba(99,91,255,0.08) 0%,transparent 70%);pointer-events:none}
+.cta h2{font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-0.03em;margin-bottom:16px;position:relative}
+.cta p{color:var(--text2);margin-bottom:32px;font-size:16px;position:relative}
+.cta-form{display:flex;gap:12px;max-width:440px;margin:0 auto;position:relative}
+.cta-form input{flex:1;padding:14px 20px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:border-color 0.15s}
+.cta-form input:focus{border-color:var(--accent)}
+.cta-form input::placeholder{color:var(--text3)}
+.cta-note{font-size:12px;color:var(--text3);margin-top:12px;position:relative}
+
+/* Footer */
+footer{padding:40px 0;border-top:1px solid var(--border)}
+footer .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-links{display:flex;gap:24px}
+.footer-links a{color:var(--text3);font-size:13px;transition:color 0.15s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{font-size:13px;color:var(--text3)}
+
+/* Coming soon badge */
+.soon{display:inline-flex;padding:3px 10px;border-radius:999px;background:rgba(99,91,255,0.1);color:var(--accent);font-size:11px;font-weight:600;margin-left:4px}
+
+/* Responsive */
+@media(max-width:768px){
+  .pain-grid,.bento,.steps{grid-template-columns:1fr}
+  .cta-form{flex-direction:column}
+  .hero{padding:120px 0 60px}
+  nav .btn{padding:8px 16px;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">🏘️ HOABot</div>
+    <a href="#waitlist" class="btn btn-primary">Get Early Access</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <h1>HOA management<br>on <span>autopilot.</span></h1>
+    <p>AI-powered dues collection, violation tracking, and resident communication — so your volunteer board can stop drowning in spreadsheets.</p>
+    <a href="#waitlist" class="btn btn-primary btn-lg">Get Early Access</a>
+    <p class="hero-sub">Free during beta. No credit card required.</p>
+  </div>
+</section>
+
+<section class="pain">
+  <div class="container">
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-icon">📊</div>
+        <h3>Dues tracked in Excel</h3>
+        <p>Your treasurer spends 10+ hours a week chasing checks and reconciling spreadsheets. Then they quit.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">⚖️</div>
+        <h3>Violations enforced unevenly</h3>
+        <p>Unit 101 gets fined. Unit 205 doesn't. Same violation. Selective enforcement is how you get sued.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">🚪</div>
+        <h3>Knowledge walks out the door</h3>
+        <p>When board members quit, passwords, vendor contacts, and institutional memory leave with them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything your board needs.<br>Nothing it doesn't.</h2>
+    <div class="bento">
+      <div class="bento-card">
+        <div class="bento-icon">💰</div>
+        <h3>Smart Dues Collection</h3>
+        <p>Automated invoicing, payment tracking, late fee calculation. See who paid and who didn't in one dashboard.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🤖</div>
+        <h3>AI Document Assistant</h3>
+        <p>Upload your CC&Rs. Residents ask questions. The AI answers instantly with exact section citations.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">⚠️</div>
+        <h3>Violation Tracking</h3>
+        <p>Report, notify, escalate — with a full audit trail. AI generates formal notice letters referencing your CC&Rs.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">📝</div>
+        <h3>Meeting Minutes AI</h3>
+        <p>Paste your raw notes. Get properly formatted minutes with motions, votes, and action items extracted.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">📈</div>
+        <h3>Financial Dashboard</h3>
+        <p>Real-time collection rates, outstanding balances, operating vs reserve fund tracking. Budget vs actual.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">📢</div>
+        <h3>Resident Communication</h3>
+        <p>Announcements, payment reminders, violation notices. Email and in-app. Communication history logged.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="container">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps to sanity.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Set up your community</h3>
+        <p>Add your units, owners, and monthly dues. Takes about 10 minutes for a 50-unit HOA.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Upload your documents</h3>
+        <p>CC&Rs, bylaws, meeting minutes. The AI indexes everything so residents can self-serve.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Let the AI handle the rest</h3>
+        <p>Automated reminders, instant CC&R answers, smart violation tracking. You steer. It operates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="proof">
+  <div class="container">
+    <p class="proof-quote">"Built by a developer who was an HOA treasurer. He quit. Then he built this."</p>
+    <div class="proof-badge">Be among the first 100 communities</div>
+  </div>
+</section>
+
+<section class="cta" id="waitlist">
+  <div class="container">
+    <h2>Ready to stop managing your HOA<br>with spreadsheets?</h2>
+    <p>Join the waitlist. We'll notify you when HOABot launches.</p>
+    <form class="cta-form" onsubmit="event.preventDefault();this.querySelector('button').textContent='You\'re on the list!';this.querySelector('input').disabled=true">
+      <input type="email" placeholder="you@yourhoa.com" required>
+      <button type="submit" class="btn btn-primary btn-lg">Get Early Access</button>
+    </form>
+    <p class="cta-note">No spam. Ever. We'll email you once when we launch.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="logo">🏘️ HOABot</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#">Pricing <span class="soon">SOON</span></a>
+      <a href="#">App <span class="soon">SOON</span></a>
+      <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot on X</a>
+    </div>
+    <div class="footer-copy">© 2026 HOABot. All rights reserved.</div>
+  </div>
+</footer>
+
+</body>
+</html>
