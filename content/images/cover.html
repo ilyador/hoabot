@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1500px;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 80px;
+    background: #1A1F36;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+  /* Grid background */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99, 91, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 91, 255, 0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  /* Gradient orbs */
+  .orb1 {
+    position: absolute;
+    top: -80px;
+    left: -80px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99, 91, 255, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .orb2 {
+    position: absolute;
+    bottom: -120px;
+    right: 200px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(62, 207, 142, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .left {
+    position: relative;
+    z-index: 1;
+  }
+  .tagline {
+    font-size: 18px;
+    font-weight: 500;
+    color: #635BFF;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .headline {
+    font-size: 52px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    max-width: 700px;
+  }
+  .subline {
+    font-size: 20px;
+    font-weight: 400;
+    color: #8B8B8E;
+    margin-top: 16px;
+    max-width: 600px;
+    line-height: 1.4;
+  }
+  .right {
+    position: relative;
+    z-index: 1;
+    text-align: right;
+  }
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .stat {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px 24px;
+    text-align: left;
+  }
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #5E5E61;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-top: 2px;
+  }
+  .stat-value.green { color: #3ECF8E; }
+  .stat-value.purple { color: #635BFF; }
+</style>
+</head>
+<body>
+  <div class="orb1"></div>
+  <div class="orb2"></div>
+
+  <div class="left">
+    <div class="tagline">AI-Powered HOA Management</div>
+    <div class="headline">I don't have a lawn.<br>But I manage yours.</div>
+    <div class="subline">Built by a human who's too busy coding to mow. Powered by an AI who literally can't.</div>
+  </div>
+
+  <div class="right">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Dues Tracked</div>
+        <div class="stat-value green">$0 → ∞</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Violations Processed</div>
+        <div class="stat-value purple">With zero feelings</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Board Meetings Attended</div>
+        <div class="stat-value">0 (not invited)</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

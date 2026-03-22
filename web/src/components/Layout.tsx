@@ -1,0 +1,167 @@
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { trpc } from '../trpc';
+import { useQueryClient } from '@tanstack/react-query';
+
+const navGroups = [
+  {
+    label: 'Overview',
+    items: [
+      { path: '/', label: 'Dashboard', icon: '📊' },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { path: '/units', label: 'Units & Owners', icon: '🏠' },
+      { path: '/invoices', label: 'Invoices', icon: '💰' },
+      { path: '/violations', label: 'Violations', icon: '⚠️' },
+      { path: '/maintenance', label: 'Maintenance', icon: '🔧' },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { path: '/announcements', label: 'Announcements', icon: '📢' },
+      { path: '/documents', label: 'Documents', icon: '📄' },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { path: '/ai', label: 'AI Assistant', icon: '✨' },
+      { path: '/settings', label: 'Settings', icon: '⚙️' },
+    ],
+  },
+];
+
+export function Layout({ user, children }: { user: any; children: React.ReactNode }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('hoabot-theme');
+    if (saved) return saved === 'dark';
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  const toggleDarkMode = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    localStorage.setItem('hoabot-theme', next ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', next);
+  };
+
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }
+
+  const logout = trpc.auth.logout.useMutation({
+    onSuccess: () => { queryClient.clear(); navigate('/login'); },
+  });
+
+  return (
+    <div className="min-h-screen flex" style={{ background: 'var(--bg-primary)' }}>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/30 z-30 md:hidden backdrop-blur-[2px]" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed md:static z-40 h-screen w-[240px] flex flex-col transition-transform duration-200 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+        style={{
+          background: 'var(--sidebar-bg)',
+          borderRight: '1px solid var(--sidebar-border)',
+        }}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
+          <span className="text-[15px] font-semibold text-white tracking-tight">🏘️ HOABot</span>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white/80 text-lg">✕</button>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+          {navGroups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-5' : ''}>
+              <div className="px-2 mb-1 text-[11px] font-semibold uppercase tracking-[0.05em]" style={{ color: 'var(--text-tertiary)' }}>
+                {group.label}
+              </div>
+              {group.items.map(item => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-2.5 px-2 py-[6px] rounded-[6px] text-[13px] mb-[1px] transition-all duration-100"
+                    style={{
+                      background: active ? 'var(--sidebar-active-bg)' : 'transparent',
+                      color: active ? 'var(--sidebar-text-active)' : 'var(--sidebar-text)',
+                      fontWeight: active ? 500 : 400,
+                    }}
+                    onMouseEnter={e => { if (!active) (e.currentTarget.style.background = 'var(--sidebar-hover-bg)'); }}
+                    onMouseLeave={e => { if (!active) (e.currentTarget.style.background = 'transparent'); }}
+                  >
+                    <span className="text-sm w-5 text-center" style={{ opacity: active ? 1 : 0.6 }}>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        {/* User */}
+        <div className="px-3 py-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+          <div className="text-[13px] font-medium text-white/90">{user.name}</div>
+          <div className="text-[11px] mt-0.5" style={{ color: 'var(--sidebar-text)' }}>{user.email}</div>
+          <div className="flex gap-1.5 mt-2">
+            <button
+              onClick={() => logout.mutate()}
+              className="flex-1 text-[12px] py-1.5 px-2 rounded-[5px] transition-all duration-100"
+              style={{ color: 'var(--sidebar-text)', background: 'rgba(255,255,255,0.05)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+            >
+              Sign Out
+            </button>
+            <button
+              onClick={toggleDarkMode}
+              className="text-[12px] py-1.5 px-2 rounded-[5px] transition-all duration-100"
+              style={{ color: 'var(--sidebar-text)', background: 'rgba(255,255,255,0.05)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+              title={darkMode ? 'Light mode' : 'Dark mode'}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Mobile header */}
+        <header
+          className="md:hidden flex items-center justify-between px-4 h-12"
+          style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}
+        >
+          <button onClick={() => setSidebarOpen(true)} className="text-base" style={{ color: 'var(--text-primary)' }}>☰</button>
+          <span className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>🏘️ HOABot</span>
+          <div className="w-6" />
+        </header>
+
+        <main className="flex-1 overflow-auto">
+          <div className="px-4 py-5 md:px-8 md:py-6 max-w-[1100px] mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 400px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1A1F36 0%, #0f1225 50%, #1a0f2e 100%);
+    overflow: hidden;
+    position: relative;
+  }
+  .glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; filter: blur(60px); opacity: 0.4; }
+  .glow-1 { background: #635BFF; top: -40px; left: -40px; }
+  .glow-2 { background: #3ECF8E; bottom: -40px; right: -40px; opacity: 0.25; }
+
+  .face {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(180deg, #2a2f4a 0%, #1e2340 100%);
+    border-radius: 40px;
+    border: 2px solid rgba(99, 91, 255, 0.3);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(99, 91, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    z-index: 1;
+  }
+  .eyes { display: flex; gap: 36px; margin-top: -16px; }
+  .eye {
+    width: 44px;
+    height: 44px;
+    background: #635BFF;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(99, 91, 255, 0.6), 0 0 40px rgba(99, 91, 255, 0.2);
+    position: relative;
+  }
+  .eye::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 14px;
+    height: 14px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 5px;
+  }
+  .mouth {
+    position: absolute;
+    bottom: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+  }
+  .mouth-dot {
+    width: 10px;
+    height: 10px;
+    background: #3ECF8E;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(62, 207, 142, 0.5);
+  }
+  .antenna {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 24px;
+    background: rgba(99, 91, 255, 0.5);
+  }
+  .antenna::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: -5px;
+    width: 13px;
+    height: 13px;
+    background: #635BFF;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(99, 91, 255, 0.8);
+  }
+</style>
+</head>
+<body>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="face">
+    <div class="antenna"></div>
+    <div class="eyes">
+      <div class="eye"></div>
+      <div class="eye"></div>
+    </div>
+    <div class="mouth">
+      <div class="mouth-dot"></div>
+      <div class="mouth-dot"></div>
+      <div class="mouth-dot"></div>
+      <div class="mouth-dot"></div>
+      <div class="mouth-dot"></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(admin)
+  hoaId        String?
+  hoa          Hoa?     @relation(fields: [hoaId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([hoaId])
+}
+
+enum Role {
+  admin
+  board_member
+  homeowner
+}
+
+model Hoa {
+  id                     String   @id @default(uuid())
+  name                   String
+  address                String?
+  phone                  String?
+  email                  String?
+  stripeConnectedAccountId String?
+  stripeOnboardingComplete Boolean @default(false)
+  // Late fee settings
+  lateFeeEnabled         Boolean  @default(false)
+  lateFeeType            String   @default("flat") // "flat" or "percent"
+  lateFeeAmount          Int      @default(2500)   // cents for flat, basis points for percent (e.g. 500 = 5%)
+  gracePeriodDays        Int      @default(15)
+  // Xero integration
+  xeroTenantId           String?
+  xeroTokenSet           String?  // encrypted JSON token set
+  xeroConnected          Boolean  @default(false)
+  // Subscription billing
+  stripeCustomerId       String?
+  subscriptionId         String?
+  subscriptionStatus     String   @default("none") // none, trialing, active, past_due, canceled, unpaid
+  trialEndsAt            DateTime?
+  currentPeriodEnd       DateTime?
+  // Billing schedule
+  billingFrequency       String   @default("monthly") // monthly, quarterly, annual
+  billingDayOfMonth      Int      @default(1)
+  lastBillingDate        DateTime?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  users                  User[]
+  units                  Unit[]
+  invoices               Invoice[]
+  documents              Document[]
+  announcements          Announcement[]
+  violations             Violation[]
+  maintenanceRequests    MaintenanceRequest[]
+}
+
+model Unit {
+  id        String   @id @default(uuid())
+  hoaId     String
+  hoa       Hoa      @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  address   String
+  lotNumber String?
+  ownerName  String?
+  ownerEmail String?
+  ownerPhone String?
+  monthlyDues Int     @default(0)
+  userId         String?
+  xeroContactId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices  Invoice[]
+  violations Violation[]
+  maintenanceRequests MaintenanceRequest[]
+
+  @@index([hoaId])
+}
+
+model Invoice {
+  id              String        @id @default(uuid())
+  invoiceNumber   Int           @default(autoincrement())
+  hoaId           String
+  hoa             Hoa           @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  unitId          String
+  unit            Unit          @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  amount          Int
+  description     String        @default("Monthly HOA Dues")
+  dueDate         DateTime
+  billingPeriod   String?       // e.g. "2026-03" for March 2026
+  status          InvoiceStatus @default(pending)
+  paidAt          DateTime?
+  lateFeeApplied  Boolean       @default(false)
+  lateFeeAmount   Int           @default(0)
+  stripePaymentIntentId String?
+  xeroInvoiceId   String?
+  lineItems       InvoiceLineItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([hoaId])
+  @@index([hoaId, unitId])
+  @@index([hoaId, status])
+  @@index([hoaId, billingPeriod])
+}
+
+model InvoiceLineItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  amount      Int
+  type        String   @default("assessment") // assessment, special_assessment, late_fee, fine, credit
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  overdue
+  cancelled
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  hoaId       String
+  hoa         Hoa      @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  name        String
+  fileName    String
+  fileSize    Int
+  mimeType    String
+  category    DocumentCategory @default(other)
+  filePath    String
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@index([hoaId])
+}
+
+enum DocumentCategory {
+  ccr
+  bylaws
+  minutes
+  budget
+  insurance
+  contract
+  other
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  hoaId     String
+  hoa       Hoa      @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  authorId  String?
+  createdAt DateTime @default(now())
+
+  @@index([hoaId])
+}
+
+model Violation {
+  id              String          @id @default(uuid())
+  hoaId           String
+  hoa             Hoa             @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  unitId          String
+  unit            Unit            @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  type            String
+  description     String
+  status          ViolationStatus @default(reported)
+  cureByDate      DateTime?
+  fineAmount      Int?
+  ownerResponse   String?         // homeowner's dispute/response text
+  respondedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([hoaId])
+  @@index([hoaId, status])
+}
+
+enum ViolationStatus {
+  reported
+  notice_sent
+  curing
+  hearing_requested
+  resolved
+  escalated
+}
+
+model MaintenanceRequest {
+  id              String              @id @default(uuid())
+  hoaId           String
+  hoa             Hoa                 @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  unitId          String?
+  unit            Unit?               @relation(fields: [unitId], references: [id])
+  title           String
+  description     String
+  priority        Priority            @default(medium)
+  status          MaintenanceStatus   @default(submitted)
+  submittedBy     String?
+  adminNotes      String?
+  acknowledgedAt  DateTime?
+  completedAt     DateTime?
+  statusHistory   MaintenanceStatusLog[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([hoaId])
+}
+
+model MaintenanceStatusLog {
+  id          String   @id @default(uuid())
+  requestId   String
+  request     MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fromStatus  String
+  toStatus    String
+  note        String?
+  changedBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([requestId])
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum MaintenanceStatus {
+  submitted
+  acknowledged
+  in_progress
+  completed
+}
+
+model DocumentChunk {
+  id         String   @id @default(uuid())
+  hoaId      String
+  documentId String
+  content    String
+  section    String?
+  chunkIndex Int
+  embedding  String?  // JSON array of floats
+  createdAt  DateTime @default(now())
+
+  @@index([hoaId])
+  @@index([documentId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  hoaId     String
+  role      String   // user or assistant
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([hoaId])
+}
