@@ -7,6 +7,7 @@ import { httpBatchLink } from '@trpc/client';
 import { trpc } from './trpc';
 import { App } from './App';
 import { ToastProvider } from './components/Toast';
+import { ConfirmProvider } from './components/ConfirmDialog';
 
 // Apply saved theme on load
 const savedTheme = localStorage.getItem('hoabot-theme');
@@ -37,7 +38,9 @@ createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter basename="/app">
           <ToastProvider>
-            <App />
+            <ConfirmProvider>
+              <App />
+            </ConfirmProvider>
           </ToastProvider>
         </BrowserRouter>
       </QueryClientProvider>
