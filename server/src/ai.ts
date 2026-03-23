@@ -1,19 +1,29 @@
 import { prisma } from './db.js';
 import fs from 'fs';
 
-const LM_STUDIO_URL = process.env.LM_STUDIO_URL || 'http://localhost:1234';
-const CHAT_MODEL = process.env.LM_STUDIO_MODEL || 'cognitivecomputations_dolphin-mistral-24b-venice-edition';
-const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'text-embedding-nomic-embed-text-v1.5';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const CHAT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const EMBEDDING_MODEL = 'text-embedding-3-small';
+const OPENAI_URL = 'https://api.openai.com/v1';
+
+function openaiHeaders() {
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${OPENAI_API_KEY}`,
+  };
+}
 
 // --- Embedding ---
 
 async function embed(text: string): Promise<number[]> {
-  const res = await fetch(`${LM_STUDIO_URL}/v1/embeddings`, {
+  const res = await fetch(`${OPENAI_URL}/embeddings`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: openaiHeaders(),
     body: JSON.stringify({ model: EMBEDDING_MODEL, input: text }),
   });
   const data = await res.json() as any;
+  if (data.error) throw new Error(`Embedding error: ${data.error.message}`);
   return data.data[0].embedding;
 }
 
@@ -132,9 +142,9 @@ async function searchChunks(hoaId: string, query: string, topK = 5): Promise<{ c
 // --- Chat with LLM ---
 
 async function chatCompletion(messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch(`${LM_STUDIO_URL}/v1/chat/completions`, {
+  const res = await fetch(`${OPENAI_URL}/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: openaiHeaders(),
     body: JSON.stringify({
       model: CHAT_MODEL,
       messages,
@@ -143,6 +153,7 @@ async function chatCompletion(messages: { role: string; content: string }[]): Pr
     }),
   });
   const data = await res.json() as any;
+  if (data.error) throw new Error(`Chat error: ${data.error.message}`);
   return data.choices[0].message.content;
 }
 

@@ -296,6 +296,25 @@ app.get('/api/linkedin/callback', async (req, res) => {
   }
 });
 
+// Waitlist email collection
+app.post('/api/waitlist', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    res.status(400).json({ error: 'Valid email required' });
+    return;
+  }
+  try {
+    await prisma.waitlistEmail.upsert({
+      where: { email },
+      create: { email },
+      update: {},
+    });
+    res.json({ success: true, message: "You'll hear from us when the app is launched." });
+  } catch (err) {
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 // tRPC
 app.use('/api/trpc', createExpressMiddleware({
   router: appRouter,

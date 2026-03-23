@@ -760,7 +760,7 @@ footer .nav-logo span { color: var(--sage-light); }
   <div class="container">
     <h2>Ready to stop managing<br>your HOA with spreadsheets?</h2>
     <p>Join the waitlist. We'll email you once when we launch. That's it.</p>
-    <form class="cta-form" onsubmit="event.preventDefault();this.querySelector('button').textContent='You\'re on the list';this.querySelector('input').disabled=true;this.querySelector('button').disabled=true">
+    <form class="cta-form" onsubmit="event.preventDefault();var f=this,e=f.querySelector('input'),b=f.querySelector('button');b.textContent='Sending...';b.disabled=true;fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})}).then(function(r){return r.json()}).then(function(d){b.textContent=d.message||'You\\'re on the list!';e.disabled=true}).catch(function(){b.textContent='Something went wrong. Try again.';b.disabled=false})"
       <input type="email" placeholder="you@yourhoa.com" required>
       <button type="submit">Get Early Access</button>
     </form>

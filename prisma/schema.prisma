@@ -272,3 +272,9 @@ model ChatMessage {
 
   @@index([hoaId])
 }
+
+model WaitlistEmail {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
