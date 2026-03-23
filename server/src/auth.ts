@@ -15,12 +15,12 @@ export function verifyPassword(password: string, hash: string): Promise<boolean>
 }
 
 export function signToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' });
 }
 
 export function verifyToken(token: string): { userId: string } | null {
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as unknown as { userId: string };
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as unknown as { userId: string };
     return payload?.userId ? payload : null;
   } catch {
     return null;

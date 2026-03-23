@@ -2,6 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import multer from 'multer';
 import path from 'path';
@@ -13,18 +16,36 @@ import { prisma } from './db.js';
 import { verifyToken } from './auth.js';
 import { UPLOAD_DIR } from './routers/documents.js';
 import { generateInvoicePdf } from './invoice-pdf.js';
-import { createXeroClient, isXeroConfigured } from './xero.js';
+import { createXeroClient, isXeroConfigured, encryptToken } from './xero.js';
+import { escapeHtml } from './email.js';
 import Stripe from 'stripe';
 import { handleSubscriptionWebhook } from './routers/subscription.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '4100');
+const isProduction = process.env.NODE_ENV === 'production';
 
+// Security headers
+app.use(helmet());
+
+// Trust proxy (Railway is behind a reverse proxy)
+app.set('trust proxy', 1);
+
+// Rate limiting
+const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: 'Too many attempts, please try again later' });
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
+const waitlistLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, standardHeaders: true, legacyHeaders: false });
+
+// CORS
+const CORS_ORIGIN = process.env.CORS_ORIGIN;
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    // Allow localhost and any LAN IP
+    // Production: allow only the configured origin
+    if (CORS_ORIGIN) {
+      return callback(null, origin === CORS_ORIGIN);
+    }
+    // Development: allow localhost and LAN IPs
     if (origin.match(/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/)) {
       return callback(null, true);
     }
@@ -33,6 +54,25 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
+
+// Helpers
+function sanitizeFilename(name: string): string {
+  return name.replace(/["\\\x00-\x1f]/g, '_').replace(/\.\./g, '_');
+}
+
+function verifyXeroState(state: string): string | null {
+  const dotIndex = state.lastIndexOf('.');
+  if (dotIndex === -1) return null;
+  const hoaId = state.slice(0, dotIndex);
+  const signature = state.slice(dotIndex + 1);
+  const expected = crypto.createHmac('sha256', process.env.JWT_SECRET || '').update(hoaId).digest('hex');
+  try {
+    if (crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) {
+      return hoaId;
+    }
+  } catch { /* length mismatch */ }
+  return null;
+}
 
 // Stripe webhook endpoint (must be before express.json() for raw body parsing)
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -50,7 +90,7 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
     res.status(200).json({ received: true });
   } catch (err: any) {
     console.error('Stripe webhook error:', err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    res.status(400).send('Webhook signature verification failed');
   }
 });
 
@@ -154,7 +194,7 @@ app.get('/api/documents/file/:id', async (req, res) => {
 
     res.setHeader('Content-Type', doc.mimeType);
     const disposition = INLINE_SAFE_TYPES.has(doc.mimeType) ? 'inline' : 'attachment';
-    res.setHeader('Content-Disposition', `${disposition}; filename="${doc.fileName}"`);
+    res.setHeader('Content-Disposition', `${disposition}; filename="${sanitizeFilename(doc.fileName)}"`);
     res.sendFile(resolvedPath);
   } catch (err) {
     res.status(500).json({ error: 'Failed to serve file' });
@@ -166,8 +206,10 @@ app.get('/api/xero/callback', async (req, res) => {
   try {
     if (!isXeroConfigured()) { res.status(400).send('Xero not configured'); return; }
 
-    const hoaId = req.query.state as string;
-    if (!hoaId) { res.status(400).send('Missing state parameter'); return; }
+    const state = req.query.state as string;
+    if (!state) { res.status(400).send('Missing state parameter'); return; }
+    const hoaId = verifyXeroState(state);
+    if (!hoaId) { res.status(400).send('Invalid state parameter'); return; }
 
     const xero = createXeroClient();
     const tokenSet = await xero.apiCallback(req.url);
@@ -181,7 +223,7 @@ app.get('/api/xero/callback', async (req, res) => {
       data: {
         xeroConnected: true,
         xeroTenantId: tenantId,
-        xeroTokenSet: JSON.stringify(tokenSet),
+        xeroTokenSet: encryptToken(JSON.stringify(tokenSet)),
       },
     });
 
@@ -252,10 +294,36 @@ app.get('/api/invoices/:id/pdf', async (req, res) => {
   }
 });
 
+// LinkedIn OAuth — initiation with CSRF state
+app.get('/api/linkedin/auth', (_req, res) => {
+  const clientId = process.env.LINKEDIN_CLIENT_ID;
+  const redirectUri = process.env.LINKEDIN_REDIRECT_URI;
+  if (!clientId || !redirectUri) { res.status(400).send('LinkedIn not configured'); return; }
+
+  const state = crypto.randomBytes(32).toString('hex');
+  res.cookie('linkedin_state', state, { httpOnly: true, sameSite: 'lax', secure: isProduction, maxAge: 600_000, path: '/' });
+
+  const url = new URL('https://www.linkedin.com/oauth/v2/authorization');
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('scope', 'openid profile email w_member_social');
+  url.searchParams.set('state', state);
+  res.redirect(url.toString());
+});
+
 // LinkedIn OAuth callback
 app.get('/api/linkedin/callback', async (req, res) => {
   const code = req.query.code as string;
+  const state = req.query.state as string;
   if (!code) { res.status(400).send('Missing code parameter'); return; }
+
+  // CSRF validation
+  const expectedState = req.cookies?.linkedin_state;
+  res.clearCookie('linkedin_state', { path: '/' });
+  if (!state || !expectedState || state !== expectedState) {
+    res.status(400).send('Invalid state parameter'); return;
+  }
 
   try {
     const tokenRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
@@ -264,13 +332,13 @@ app.get('/api/linkedin/callback', async (req, res) => {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: process.env.LINKEDIN_REDIRECT_URI || 'http://192.168.1.192:4100/api/linkedin/callback',
+        redirect_uri: process.env.LINKEDIN_REDIRECT_URI || '',
         client_id: process.env.LINKEDIN_CLIENT_ID || '',
         client_secret: process.env.LINKEDIN_CLIENT_SECRET || '',
       }),
     });
     const tokenData = await tokenRes.json() as any;
-    if (tokenData.error) { res.status(400).send(`OAuth error: ${tokenData.error_description}`); return; }
+    if (tokenData.error) { res.status(400).send('OAuth authentication failed'); return; }
 
     // Get user info
     const meRes = await fetch('https://api.linkedin.com/v2/userinfo', {
@@ -278,25 +346,31 @@ app.get('/api/linkedin/callback', async (req, res) => {
     });
     const me = await meRes.json() as any;
 
-    // Save token to file for content pipeline
-    const tokenFile = path.join(process.cwd(), 'content/.linkedin-token.json');
-    fs.writeFileSync(tokenFile, JSON.stringify({
-      access_token: tokenData.access_token,
-      expires_at: Date.now() + (tokenData.expires_in * 1000),
-      person_id: me.sub,
-      name: me.name,
-      email: me.email,
-    }, null, 2));
+    // Save token to file for content pipeline (graceful — skips in production/Docker where content/ doesn't exist)
+    try {
+      const contentDir = path.join(process.cwd(), 'content');
+      if (fs.existsSync(contentDir)) {
+        fs.writeFileSync(path.join(contentDir, '.linkedin-token.json'), JSON.stringify({
+          access_token: tokenData.access_token,
+          expires_at: Date.now() + (tokenData.expires_in * 1000),
+          person_id: me.sub,
+          name: me.name,
+          email: me.email,
+        }, null, 2));
+      }
+    } catch (e) {
+      console.warn('Could not save LinkedIn token file:', (e as Error).message);
+    }
 
-    res.send(`<h2>LinkedIn connected!</h2><p>Authenticated as: ${me.name} (${me.email})</p><p>Token saved. You can close this window.</p>`);
+    res.send(`<h2>LinkedIn connected!</h2><p>Authenticated as: ${escapeHtml(me.name || '')} (${escapeHtml(me.email || '')})</p><p>Token saved. You can close this window.</p>`);
   } catch (err: any) {
     console.error('LinkedIn callback error:', err);
-    res.status(500).send(`Error: ${err.message}`);
+    res.status(500).send('LinkedIn authentication failed. Please try again.');
   }
 });
 
 // Waitlist email collection
-app.post('/api/waitlist', async (req, res) => {
+app.post('/api/waitlist', waitlistLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) {
     res.status(400).json({ error: 'Valid email required' });
@@ -315,8 +389,10 @@ app.post('/api/waitlist', async (req, res) => {
   }
 });
 
-// tRPC
-app.use('/api/trpc', createExpressMiddleware({
+// tRPC — with rate limiting (auth endpoints get stricter limits)
+app.use('/api/trpc/auth.login', authLimiter);
+app.use('/api/trpc/auth.register', authLimiter);
+app.use('/api/trpc', apiLimiter, createExpressMiddleware({
   router: appRouter,
   createContext,
 }));

@@ -1,9 +1,33 @@
 import { XeroClient } from 'xero-node';
+import crypto from 'crypto';
 import { prisma } from './db.js';
 
 const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID || '';
 const XERO_CLIENT_SECRET = process.env.XERO_CLIENT_SECRET || '';
 const BASE_URL = process.env.VITE_API_URL || 'http://localhost:4100';
+const TOKEN_KEY = process.env.TOKEN_ENCRYPTION_KEY || '';
+
+export function encryptToken(plaintext: string): string {
+  if (!TOKEN_KEY) return plaintext;
+  const key = Buffer.from(TOKEN_KEY, 'hex');
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
+}
+
+function decryptToken(ciphertext: string): string {
+  if (!TOKEN_KEY) return ciphertext;
+  // Graceful fallback: if it doesn't look encrypted (starts with {), return as-is
+  if (ciphertext.startsWith('{')) return ciphertext;
+  const [ivHex, authTagHex, encHex] = ciphertext.split(':');
+  if (!ivHex || !authTagHex || !encHex) return ciphertext;
+  const key = Buffer.from(TOKEN_KEY, 'hex');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivHex, 'hex'));
+  decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
+  return decipher.update(Buffer.from(encHex, 'hex')) + decipher.final('utf8');
+}
 
 export function isXeroConfigured(): boolean {
   return !!XERO_CLIENT_ID && !!XERO_CLIENT_SECRET;
@@ -23,7 +47,7 @@ export async function getXeroClientForHoa(hoaId: string): Promise<{ xero: XeroCl
   if (!hoa?.xeroConnected || !hoa.xeroTokenSet || !hoa.xeroTenantId) return null;
 
   const xero = createXeroClient();
-  const tokenSet = JSON.parse(hoa.xeroTokenSet);
+  const tokenSet = JSON.parse(decryptToken(hoa.xeroTokenSet));
   await xero.setTokenSet(tokenSet);
 
   // Refresh if expired
@@ -31,7 +55,7 @@ export async function getXeroClientForHoa(hoaId: string): Promise<{ xero: XeroCl
     const newTokenSet = await xero.refreshToken();
     await prisma.hoa.update({
       where: { id: hoaId },
-      data: { xeroTokenSet: JSON.stringify(newTokenSet) },
+      data: { xeroTokenSet: encryptToken(JSON.stringify(newTokenSet)) },
     });
   }
 

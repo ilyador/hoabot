@@ -20,13 +20,13 @@ export const authRouter = router({
   register: publicProcedure
     .input(z.object({
       email: z.string().email(),
-      password: z.string().min(6),
+      password: z.string().min(8),
       name: z.string().min(1),
     }))
     .mutation(async ({ input, ctx }) => {
       const existing = await prisma.user.findUnique({ where: { email: input.email } });
       if (existing) {
-        throw new TRPCError({ code: 'CONFLICT', message: 'Email already in use' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Registration failed' });
       }
 
       const passwordHash = await hashPassword(input.password);

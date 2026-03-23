@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import crypto from 'crypto';
 import { router, adminProcedure } from '../trpc.js';
 import { prisma } from '../db.js';
 import { TRPCError } from '@trpc/server';
@@ -24,9 +25,10 @@ export const xeroRouter = router({
     const xero = createXeroClient();
     const consentUrl = await xero.buildConsentUrl();
 
-    // Store hoaId in state param for callback
+    // Store hoaId in HMAC-signed state param for callback
     const url = new URL(consentUrl);
-    url.searchParams.set('state', ctx.hoaId);
+    const hmac = crypto.createHmac('sha256', process.env.JWT_SECRET || '').update(ctx.hoaId).digest('hex');
+    url.searchParams.set('state', `${ctx.hoaId}.${hmac}`);
 
     return { url: url.toString() };
   }),

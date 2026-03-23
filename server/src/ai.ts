@@ -184,7 +184,7 @@ RULES:
 
   const messages = [
     { role: 'system', content: systemPrompt },
-    { role: 'user', content: `Here are relevant excerpts from the HOA's governing documents:\n\n${context}\n\nQuestion: ${question}` },
+    { role: 'user', content: `Here are relevant excerpts from the HOA's governing documents:\n\n${context}\n\n---BEGIN USER QUESTION---\n${question}\n---END USER QUESTION---` },
   ];
 
   const answer = await chatCompletion(messages);
@@ -261,8 +261,10 @@ export async function generateMeetingMinutes(rawNotes: string, hoaName: string):
   const prompt = `Convert these raw meeting notes into properly formatted HOA board meeting minutes:
 
 HOA: ${hoaName}
-Raw Notes:
+
+---BEGIN RAW NOTES---
 ${rawNotes}
+---END RAW NOTES---
 
 Format the minutes with:
 1. Meeting header (HOA name, date if mentioned, "Board Meeting Minutes")

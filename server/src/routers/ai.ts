@@ -18,7 +18,7 @@ export const aiRouter = router({
         const chunkCount = await indexDocument(doc.id, ctx.hoaId, doc.filePath);
         return { success: true, chunksCreated: chunkCount };
       } catch (err: any) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `Indexing failed: ${err.message}` });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Document indexing failed' });
       }
     }),
 
@@ -29,7 +29,7 @@ export const aiRouter = router({
       try {
         return await askCCR(ctx.hoaId, input.question);
       } catch (err: any) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `AI error: ${err.message}` });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI request failed' });
       }
     }),
 
@@ -60,7 +60,7 @@ export const aiRouter = router({
         });
         return { notice };
       } catch (err: any) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `AI error: ${err.message}` });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI request failed' });
       }
     }),
 
@@ -75,7 +75,7 @@ export const aiRouter = router({
         const minutes = await generateMeetingMinutes(input.rawNotes, hoa.name);
         return { minutes };
       } catch (err: any) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `AI error: ${err.message}` });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI request failed' });
       }
     }),
 });
