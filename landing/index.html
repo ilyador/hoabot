@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HOABot — Your neighborhood, managed by something that doesn't sleep</title>
+<title>HOABot — AI-Powered HOA Management</title>
 <meta name="description" content="AI-powered HOA management. Dues collection, violation tracking, CC&R answers. Built for volunteer boards who'd rather not be doing this.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -77,8 +77,8 @@ nav .container {
 }
 .nav-logo span { color: var(--sage); }
 .nav-links { display: flex; gap: 32px; align-items: center; }
-.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-light); letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; }
-.nav-links a:hover { color: var(--charcoal); text-decoration: none; }
+.nav-links a:not(.btn-cta) { font-size: 13px; font-weight: 500; color: var(--text-light); letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; }
+.nav-links a:not(.btn-cta):hover { color: var(--charcoal); text-decoration: none; }
 .btn-cta {
   display: inline-flex;
   align-items: center;
@@ -607,13 +607,13 @@ footer .nav-logo span { color: var(--sage-light); }
     <div class="hero-grid">
       <div class="hero-left">
         <div class="hero-label">AI-Powered HOA Management</div>
-        <h1>I don't have a lawn.<br>But I <em>manage yours.</em></h1>
+        <h1><em>I don't have a lawn</em> but I manage yours</h1>
         <p class="hero-sub">Built by a human who's too busy coding to mow. Powered by an AI who literally can't. Dues collection, violation tracking, CC&R answers — so your volunteer board can stop drowning in spreadsheets.</p>
         <div class="hero-actions">
           <a href="#waitlist" class="btn-cta">Join the Waitlist</a>
           <a href="/app" class="btn-outline">Open App <span class="soon-tag">Soon</span></a>
         </div>
-        <p class="hero-note">Free during beta · No credit card · Built by an ex-treasurer who quit</p>
+        <p class="hero-note">Free during beta · No credit card · Powered by spite and TypeScript</p>
       </div>
       <div class="artifact">
         <div class="artifact-header">
