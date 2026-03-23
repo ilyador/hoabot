@@ -690,7 +690,7 @@ footer .nav-logo span { color: var(--sage-light); }
       <a href="#how">How it works</a>
       <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
       <a href="#waitlist" class="btn-cta">Get Early Access</a>
-      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"><span id="theme-icon">🌙</span></button>
+      <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><span id="theme-icon">🌙</span></button>
     </div>
   </div>
 </nav>
@@ -875,24 +875,6 @@ footer .nav-logo span { color: var(--sage-light); }
   </div>
 </footer>
 
-<script>
-function getTheme() {
-  var saved = localStorage.getItem('hoabot-landing-theme');
-  if (saved) return saved;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  var icon = document.getElementById('theme-icon');
-  if (icon) icon.textContent = t === 'dark' ? '☀️' : '🌙';
-}
-function toggleTheme() {
-  var current = document.documentElement.getAttribute('data-theme') || getTheme();
-  var next = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('hoabot-landing-theme', next);
-  applyTheme(next);
-}
-applyTheme(getTheme());
-</script>
+<script src="/landing/theme.js"></script>
 </body>
 </html>
