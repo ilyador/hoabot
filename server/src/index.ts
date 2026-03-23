@@ -26,7 +26,19 @@ const PORT = parseInt(process.env.PORT || '4100');
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Security headers
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://maps.googleapis.com"],
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+      fontSrc: ["'self'", "https:", "data:"],
+      imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
+      connectSrc: ["'self'", "https://maps.googleapis.com"],
+      frameSrc: ["'none'"],
+    },
+  },
+}));
 
 // Trust proxy (Railway is behind a reverse proxy)
 app.set('trust proxy', 1);
