@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { trpc } from '../trpc';
 import { useToast } from '../components/Toast';
+import { CardSkeleton } from '../components/LoadingSkeleton';
+import { formatDateTime } from '../lib/format';
 
 const statusBadge: Record<string, string> = {
   submitted: 'badge badge-warning',
@@ -34,11 +36,22 @@ export function MaintenancePage() {
   const [statusNote, setStatusNote] = useState('');
 
   const createReq = trpc.maintenance.create.useMutation({
-    onSuccess: () => { utils.maintenance.list.invalidate(); utils.hoa.dashboard.invalidate(); setShowForm(false); setForm({ unitId: '', title: '', description: '', priority: 'medium' }); toast('Request submitted'); },
+    onSuccess: () => {
+      utils.maintenance.list.invalidate();
+      utils.hoa.dashboard.invalidate();
+      setShowForm(false);
+      setForm({ unitId: '', title: '', description: '', priority: 'medium' });
+      toast('Request submitted');
+    },
     onError: (err) => toast(err.message, 'error'),
   });
   const updateStatus = trpc.maintenance.updateStatus.useMutation({
-    onSuccess: () => { utils.maintenance.list.invalidate(); utils.hoa.dashboard.invalidate(); setStatusNote(''); toast('Status updated'); },
+    onSuccess: () => {
+      utils.maintenance.list.invalidate();
+      utils.hoa.dashboard.invalidate();
+      setStatusNote('');
+      toast('Status updated');
+    },
     onError: (err) => toast(err.message, 'error'),
   });
 
@@ -86,7 +99,9 @@ export function MaintenancePage() {
                 className="input" required />
             </div>
             <div className="md:col-span-2 flex gap-2">
-              <button type="submit" disabled={createReq.isPending} className="btn btn-primary">Submit</button>
+              <button type="submit" disabled={createReq.isPending} className="btn btn-primary">
+                {createReq.isPending ? 'Submitting...' : 'Submit'}
+              </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Cancel</button>
             </div>
           </form>
@@ -94,7 +109,7 @@ export function MaintenancePage() {
       )}
 
       {isLoading ? (
-        <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>
+        <CardSkeleton count={3} />
       ) : !requests?.length ? (
         <div className="empty-state">
           <h3>No maintenance requests</h3>
@@ -114,15 +129,20 @@ export function MaintenancePage() {
                   {req.unit && <div style={{ color: 'var(--text-tertiary)', fontSize: '12px', marginTop: '2px' }}>{req.unit.address}</div>}
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={req.status} onChange={e => {
-                    const newStatus = e.target.value;
-                    if (expandedId === req.id) {
-                      updateStatus.mutate({ id: req.id, status: newStatus as any, note: statusNote || undefined });
-                    } else {
-                      updateStatus.mutate({ id: req.id, status: newStatus as any });
-                    }
-                  }}
-                    className="input" style={{ width: 'auto', padding: '4px 32px 4px 8px', fontSize: '13px' }}>
+                  <select
+                    value={req.status}
+                    onChange={e => {
+                      const newStatus = e.target.value;
+                      if (expandedId === req.id) {
+                        updateStatus.mutate({ id: req.id, status: newStatus as any, note: statusNote || undefined });
+                      } else {
+                        updateStatus.mutate({ id: req.id, status: newStatus as any });
+                      }
+                    }}
+                    disabled={updateStatus.isPending}
+                    className="input"
+                    style={{ width: 'auto', padding: '4px 32px 4px 8px', fontSize: '13px' }}
+                  >
                     <option value="submitted">Submitted</option>
                     <option value="acknowledged">Acknowledged</option>
                     <option value="in_progress">In Progress</option>
@@ -155,13 +175,13 @@ export function MaintenancePage() {
                             {entry.toStatus === 'submitted' ? 'Request submitted' : `${statusLabels[entry.fromStatus] || entry.fromStatus} -> ${statusLabels[entry.toStatus] || entry.toStatus}`}
                           </div>
                           {entry.note && <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{entry.note}</div>}
-                          <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{new Date(entry.createdAt).toLocaleString()}</div>
+                          <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{formatDateTime(entry.createdAt)}</div>
                         </div>
                       </div>
                     ))}
                     {(!req.statusHistory || req.statusHistory.length === 0) && (
                       <div className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                        Created {new Date(req.createdAt).toLocaleString()}
+                        Created {formatDateTime(req.createdAt)}
                       </div>
                     )}
                   </div>
@@ -172,13 +192,13 @@ export function MaintenancePage() {
                       className="input flex-1" style={{ fontSize: '12px' }} />
                   </div>
                   <div className="flex gap-4 mt-2 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                    {req.acknowledgedAt && <span>Acknowledged: {new Date(req.acknowledgedAt).toLocaleDateString()}</span>}
-                    {req.completedAt && <span>Completed: {new Date(req.completedAt).toLocaleDateString()}</span>}
+                    {req.acknowledgedAt && <span>Acknowledged: {formatDateTime(req.acknowledgedAt)}</span>}
+                    {req.completedAt && <span>Completed: {formatDateTime(req.completedAt)}</span>}
                   </div>
                 </div>
               )}
 
-              <div style={{ color: 'var(--text-tertiary)', fontSize: '12px', marginTop: '8px' }}>{new Date(req.createdAt).toLocaleString()}</div>
+              <div style={{ color: 'var(--text-tertiary)', fontSize: '12px', marginTop: '8px' }}>{formatDateTime(req.createdAt)}</div>
             </div>
           ))}
         </div>

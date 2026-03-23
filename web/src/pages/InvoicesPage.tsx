@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { trpc } from '../trpc';
 import { useToast } from '../components/Toast';
+import { FormField } from '../components/FormField';
+import { TableSkeleton } from '../components/LoadingSkeleton';
+import { formatCurrency, formatDate } from '../lib/format';
 
 const statusBadge: Record<string, string> = {
   pending: 'badge badge-warning',
@@ -8,10 +11,6 @@ const statusBadge: Record<string, string> = {
   overdue: 'badge badge-error',
   cancelled: 'badge badge-neutral',
 };
-
-function fmt(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
-}
 
 export function InvoicesPage() {
   const { toast } = useToast();
@@ -57,6 +56,16 @@ export function InvoicesPage() {
 
   const filtered = invoices?.filter((inv: any) => !statusFilter || inv.status === statusFilter);
 
+  // Track which invoice is being acted on to disable its buttons
+  const [pendingAction, setPendingAction] = useState<Record<string, boolean>>({});
+
+  function withPendingAction(id: string, fn: () => void) {
+    setPendingAction(prev => ({ ...prev, [id]: true }));
+    fn();
+    // Clear after mutation settles (the mutation callbacks will re-render)
+    setTimeout(() => setPendingAction(prev => ({ ...prev, [id]: false })), 500);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -78,16 +87,20 @@ export function InvoicesPage() {
         <div className="card p-5 mb-6">
           <h2 className="mb-4">Generate Dues for All Units</h2>
           <form onSubmit={e => { e.preventDefault(); bulkGenerate.mutate(bulkForm); }} className="flex gap-4 items-end flex-wrap">
-            <div className="flex-1 min-w-[180px]">
-              <label className="label">Description</label>
-              <input type="text" value={bulkForm.description} onChange={e => setBulkForm({ ...bulkForm, description: e.target.value })}
-                className="input" />
-            </div>
-            <div className="flex-1 min-w-[160px]">
-              <label className="label">Due Date</label>
-              <input type="date" value={bulkForm.dueDate} onChange={e => setBulkForm({ ...bulkForm, dueDate: e.target.value })}
-                className="input" required />
-            </div>
+            <FormField
+              label="Description"
+              value={bulkForm.description}
+              onChange={v => setBulkForm({ ...bulkForm, description: v })}
+              className="flex-1 min-w-[180px]"
+            />
+            <FormField
+              label="Due Date"
+              type="date"
+              value={bulkForm.dueDate}
+              onChange={v => setBulkForm({ ...bulkForm, dueDate: v })}
+              required
+              className="flex-1 min-w-[160px]"
+            />
             <button type="submit" disabled={bulkGenerate.isPending} className="btn btn-primary" style={{ background: 'var(--success)' }}>
               {bulkGenerate.isPending ? 'Generating...' : 'Generate'}
             </button>
@@ -103,31 +116,42 @@ export function InvoicesPage() {
         <div className="card p-5 mb-6">
           <h2 className="mb-4">New Invoice</h2>
           <form onSubmit={e => { e.preventDefault(); createInvoice.mutate({ ...form, amount: Math.round(form.amount * 100) }); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="label">Unit</label>
-              <select value={form.unitId} onChange={e => setForm({ ...form, unitId: e.target.value })}
-                className="input" required>
+            <FormField label="Unit" value={form.unitId} onChange={v => setForm({ ...form, unitId: v })} required>
+              <select
+                value={form.unitId}
+                onChange={e => setForm({ ...form, unitId: e.target.value })}
+                className="input"
+                required
+              >
                 <option value="">Select unit...</option>
                 {units?.map((u: any) => <option key={u.id} value={u.id}>{u.address} {u.ownerName ? `(${u.ownerName})` : ''}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="label">Amount ($)</label>
-              <input type="number" step="0.01" min="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })}
-                className="input" required />
-            </div>
-            <div>
-              <label className="label">Description</label>
-              <input type="text" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                className="input" />
-            </div>
-            <div>
-              <label className="label">Due Date</label>
-              <input type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })}
-                className="input" required />
-            </div>
+            </FormField>
+            <FormField
+              label="Amount ($)"
+              type="number"
+              value={String(form.amount)}
+              onChange={v => setForm({ ...form, amount: parseFloat(v) || 0 })}
+              step="0.01"
+              min="0.01"
+              required
+            />
+            <FormField
+              label="Description"
+              value={form.description}
+              onChange={v => setForm({ ...form, description: v })}
+            />
+            <FormField
+              label="Due Date"
+              type="date"
+              value={form.dueDate}
+              onChange={v => setForm({ ...form, dueDate: v })}
+              required
+            />
             <div className="md:col-span-2 flex gap-2">
-              <button type="submit" disabled={createInvoice.isPending} className="btn btn-primary">Create</button>
+              <button type="submit" disabled={createInvoice.isPending} className="btn btn-primary">
+                {createInvoice.isPending ? 'Creating...' : 'Create'}
+              </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Cancel</button>
             </div>
           </form>
@@ -146,7 +170,7 @@ export function InvoicesPage() {
               <div className="text-right">
                 <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>Current Balance</div>
                 <div className="text-[18px] font-semibold" style={{ color: ledgerData.currentBalance > 0 ? 'var(--error)' : 'var(--success)' }}>
-                  {fmt(ledgerData.currentBalance)}
+                  {formatCurrency(ledgerData.currentBalance)}
                 </div>
               </div>
               <button onClick={() => setShowLedger(null)} className="btn btn-secondary btn-sm">Close</button>
@@ -166,23 +190,23 @@ export function InvoicesPage() {
               <tbody>
                 {ledgerData.entries.map((entry: any, i: number) => (
                   <tr key={i}>
-                    <td style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{entry.date}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{formatDate(entry.date)}</td>
                     <td>{entry.description}</td>
                     <td style={{ textAlign: 'right', color: entry.charges > 0 ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
-                      {entry.charges > 0 ? fmt(entry.charges) : ''}
+                      {entry.charges > 0 ? formatCurrency(entry.charges) : ''}
                     </td>
                     <td style={{ textAlign: 'right', color: entry.payments > 0 ? 'var(--success)' : 'var(--text-tertiary)' }}>
-                      {entry.payments > 0 ? `-${fmt(entry.payments)}` : ''}
+                      {entry.payments > 0 ? `-${formatCurrency(entry.payments)}` : ''}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 500 }}>{fmt(entry.balance)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 500 }}>{formatCurrency(entry.balance)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <div className="flex gap-6 mt-3 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-            <span>Total Charges: {fmt(ledgerData.totalCharges)}</span>
-            <span>Total Payments: {fmt(ledgerData.totalPayments)}</span>
+            <span>Total Charges: {formatCurrency(ledgerData.totalCharges)}</span>
+            <span>Total Payments: {formatCurrency(ledgerData.totalPayments)}</span>
           </div>
         </div>
       )}
@@ -200,7 +224,7 @@ export function InvoicesPage() {
       )}
 
       {isLoading ? (
-        <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>
+        <TableSkeleton rows={6} cols={8} />
       ) : !invoices?.length ? (
         <div className="empty-state">
           <h3>No invoices yet</h3>
@@ -222,48 +246,76 @@ export function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered?.map((inv: any) => (
-                <tr key={inv.id}>
-                  <td style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{String(inv.invoiceNumber).padStart(5, '0')}</td>
-                  <td>
-                    <button onClick={() => setShowLedger(inv.unitId)} className="font-medium" style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
-                      {inv.unit.address}
-                    </button>
-                  </td>
-                  <td style={{ color: 'var(--text-secondary)' }}>{inv.description}</td>
-                  <td style={{ fontWeight: 500 }}>{fmt(inv.amount)}</td>
-                  <td style={{ color: inv.lateFeeAmount > 0 ? 'var(--error)' : 'var(--text-tertiary)', fontSize: '13px' }}>
-                    {inv.lateFeeAmount > 0 ? fmt(inv.lateFeeAmount) : '--'}
-                  </td>
-                  <td style={{ color: 'var(--text-secondary)' }}>{new Date(inv.dueDate).toLocaleDateString()}</td>
-                  <td>
-                    <span className={statusBadge[inv.status]}>{inv.status}</span>
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <a href={`/api/invoices/${inv.id}/pdf`} target="_blank" className="btn btn-ghost btn-sm" style={{ color: 'var(--accent)' }}>
-                      PDF
-                    </a>
-                    {inv.status === 'pending' && (
-                      <>
-                        <button onClick={() => markPaid.mutate({ id: inv.id })} className="btn btn-ghost btn-sm" style={{ color: 'var(--success)' }}>Paid</button>
-                        <button onClick={() => markOverdue.mutate({ id: inv.id })} className="btn btn-ghost btn-sm" style={{ color: 'var(--warning)' }}>Overdue</button>
-                        <button onClick={() => cancelInvoice.mutate({ id: inv.id })} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>Cancel</button>
-                      </>
-                    )}
-                    {inv.status === 'overdue' && (
-                      <>
-                        <button onClick={() => markPaid.mutate({ id: inv.id })} className="btn btn-ghost btn-sm" style={{ color: 'var(--success)' }}>Paid</button>
-                        <button onClick={() => cancelInvoice.mutate({ id: inv.id })} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>Cancel</button>
-                      </>
-                    )}
-                    {inv.status === 'paid' && (
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>
-                        {inv.paidAt ? new Date(inv.paidAt).toLocaleDateString() : ''}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filtered?.map((inv: any) => {
+                const isActionPending = pendingAction[inv.id] || markPaid.isPending || markOverdue.isPending || cancelInvoice.isPending;
+                return (
+                  <tr key={inv.id}>
+                    <td style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{String(inv.invoiceNumber).padStart(5, '0')}</td>
+                    <td>
+                      <button onClick={() => setShowLedger(inv.unitId)} className="font-medium" style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
+                        {inv.unit.address}
+                      </button>
+                    </td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{inv.description}</td>
+                    <td style={{ fontWeight: 500 }}>{formatCurrency(inv.amount)}</td>
+                    <td style={{ color: inv.lateFeeAmount > 0 ? 'var(--error)' : 'var(--text-tertiary)', fontSize: '13px' }}>
+                      {inv.lateFeeAmount > 0 ? formatCurrency(inv.lateFeeAmount) : '--'}
+                    </td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{formatDate(inv.dueDate)}</td>
+                    <td>
+                      <span className={statusBadge[inv.status]}>{inv.status}</span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <a href={`/api/invoices/${inv.id}/pdf`} target="_blank" className="btn btn-ghost btn-sm" style={{ color: 'var(--accent)' }}>
+                        PDF
+                      </a>
+                      {inv.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => withPendingAction(inv.id, () => markPaid.mutate({ id: inv.id }))}
+                            disabled={isActionPending}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--success)' }}
+                          >Paid</button>
+                          <button
+                            onClick={() => withPendingAction(inv.id, () => markOverdue.mutate({ id: inv.id }))}
+                            disabled={isActionPending}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--warning)' }}
+                          >Overdue</button>
+                          <button
+                            onClick={() => withPendingAction(inv.id, () => cancelInvoice.mutate({ id: inv.id }))}
+                            disabled={isActionPending}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--error)' }}
+                          >Cancel</button>
+                        </>
+                      )}
+                      {inv.status === 'overdue' && (
+                        <>
+                          <button
+                            onClick={() => withPendingAction(inv.id, () => markPaid.mutate({ id: inv.id }))}
+                            disabled={isActionPending}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--success)' }}
+                          >Paid</button>
+                          <button
+                            onClick={() => withPendingAction(inv.id, () => cancelInvoice.mutate({ id: inv.id }))}
+                            disabled={isActionPending}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--error)' }}
+                          >Cancel</button>
+                        </>
+                      )}
+                      {inv.status === 'paid' && (
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                          {inv.paidAt ? formatDate(inv.paidAt) : ''}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../trpc';
 import { useQueryClient } from '@tanstack/react-query';
+import { FormField } from '../components/FormField';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
 
 export function SetupHoaPage() {
@@ -34,27 +35,30 @@ export function SetupHoaPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); createHoa.mutate({ name, address }); }}>
-            <div className="mb-4">
-              <label className="label">HOA Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input"
-                placeholder="e.g., Sunset Ridge HOA"
-                required
-              />
-            </div>
+          <form onSubmit={(e) => { e.preventDefault(); setError(''); createHoa.mutate({ name, address }); }}>
+            <FormField
+              label="HOA Name"
+              value={name}
+              onChange={setName}
+              placeholder="e.g., Sunset Ridge HOA"
+              required
+              disabled={createHoa.isPending}
+              className="mb-4"
+            />
 
-            <div className="mb-6">
-              <label className="label">Address</label>
+            <FormField
+              label="Address"
+              value={address}
+              onChange={setAddress}
+              disabled={createHoa.isPending}
+              className="mb-6"
+            >
               <AddressAutocomplete
                 value={address}
                 onChange={setAddress}
                 placeholder="123 Main St, Anytown, USA"
               />
-            </div>
+            </FormField>
 
             <button
               type="submit"

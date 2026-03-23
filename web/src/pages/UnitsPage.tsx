@@ -1,28 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { trpc } from '../trpc';
 import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmDialog';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
+import { FormField } from '../components/FormField';
+import { PhoneInput } from '../components/PhoneInput';
+import { TableSkeleton } from '../components/LoadingSkeleton';
+import { formatCurrency } from '../lib/format';
 
 export function UnitsPage() {
   const { toast } = useToast();
+  const confirm = useConfirm();
   const utils = trpc.useUtils();
   const { data: units, isLoading } = trpc.units.list.useQuery();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [form, setForm] = useState({ address: '', lotNumber: '', ownerName: '', ownerEmail: '', ownerPhone: '', monthlyDues: 0 });
 
-  const createUnit = trpc.units.create.useMutation({ onSuccess: () => { utils.units.list.invalidate(); resetForm(); toast('Unit created'); } });
-  const updateUnit = trpc.units.update.useMutation({ onSuccess: () => { utils.units.list.invalidate(); resetForm(); toast('Unit updated'); } });
-  const deleteUnit = trpc.units.delete.useMutation({ onSuccess: () => { utils.units.list.invalidate(); toast('Unit deleted', 'warning'); } });
+  // Debounce search input (300ms)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [search]);
 
-  function resetForm() { setForm({ address: '', lotNumber: '', ownerName: '', ownerEmail: '', ownerPhone: '', monthlyDues: 0 }); setShowForm(false); setEditId(null); }
-  function startEdit(u: any) { setForm({ address: u.address, lotNumber: u.lotNumber || '', ownerName: u.ownerName || '', ownerEmail: u.ownerEmail || '', ownerPhone: u.ownerPhone || '', monthlyDues: u.monthlyDues / 100 }); setEditId(u.id); setShowForm(true); }
-  function handleSubmit(e: React.FormEvent) { e.preventDefault(); const d = { ...form, monthlyDues: Math.round(form.monthlyDues * 100) }; editId ? updateUnit.mutate({ id: editId, ...d }) : createUnit.mutate(d); }
+  const createUnit = trpc.units.create.useMutation({
+    onSuccess: () => { utils.units.list.invalidate(); resetForm(); toast('Unit created'); },
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const updateUnit = trpc.units.update.useMutation({
+    onSuccess: () => { utils.units.list.invalidate(); resetForm(); toast('Unit updated'); },
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const deleteUnit = trpc.units.delete.useMutation({
+    onSuccess: () => { utils.units.list.invalidate(); toast('Unit deleted', 'warning'); },
+    onError: (err) => toast(err.message, 'error'),
+  });
+
+  function resetForm() {
+    setForm({ address: '', lotNumber: '', ownerName: '', ownerEmail: '', ownerPhone: '', monthlyDues: 0 });
+    setShowForm(false);
+    setEditId(null);
+  }
+
+  function startEdit(u: any) {
+    setForm({
+      address: u.address,
+      lotNumber: u.lotNumber || '',
+      ownerName: u.ownerName || '',
+      ownerEmail: u.ownerEmail || '',
+      ownerPhone: u.ownerPhone || '',
+      monthlyDues: u.monthlyDues / 100,
+    });
+    setEditId(u.id);
+    setShowForm(true);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const d = { ...form, monthlyDues: Math.round(form.monthlyDues * 100) };
+    editId ? updateUnit.mutate({ id: editId, ...d }) : createUnit.mutate(d);
+  }
+
+  async function handleDelete(u: any) {
+    const confirmed = await confirm({
+      title: 'Delete unit?',
+      message: 'This will also delete all invoices and violations for this unit.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (confirmed) deleteUnit.mutate({ id: u.id });
+  }
 
   const filtered = units?.filter((u: any) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const s = debouncedSearch.toLowerCase();
     return u.address.toLowerCase().includes(s) || u.ownerName?.toLowerCase().includes(s) || u.ownerEmail?.toLowerCase().includes(s);
   });
 
@@ -37,14 +93,43 @@ export function UnitsPage() {
         <div className="card p-4 mb-5">
           <h3 className="mb-3">{editId ? 'Edit Unit' : 'New Unit'}</h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div><label className="label">Address *</label><AddressAutocomplete value={form.address} onChange={addr => setForm({ ...form, address: addr })} required /></div>
-            <div><label className="label">Lot #</label><input type="text" value={form.lotNumber} onChange={e => setForm({ ...form, lotNumber: e.target.value })} className="input" /></div>
-            <div><label className="label">Owner Name</label><input type="text" value={form.ownerName} onChange={e => setForm({ ...form, ownerName: e.target.value })} className="input" /></div>
-            <div><label className="label">Owner Email</label><input type="email" value={form.ownerEmail} onChange={e => setForm({ ...form, ownerEmail: e.target.value })} className="input" /></div>
-            <div><label className="label">Owner Phone</label><input type="text" value={form.ownerPhone} onChange={e => setForm({ ...form, ownerPhone: e.target.value })} className="input" /></div>
-            <div><label className="label">Monthly Dues ($)</label><input type="number" step="0.01" min="0" value={form.monthlyDues} onChange={e => setForm({ ...form, monthlyDues: parseFloat(e.target.value) || 0 })} className="input" /></div>
+            <FormField label="Address" value={form.address} onChange={() => {}} required>
+              <AddressAutocomplete value={form.address} onChange={addr => setForm({ ...form, address: addr })} required />
+            </FormField>
+            <FormField
+              label="Lot #"
+              value={form.lotNumber}
+              onChange={v => setForm({ ...form, lotNumber: v })}
+            />
+            <FormField
+              label="Owner Name"
+              value={form.ownerName}
+              onChange={v => setForm({ ...form, ownerName: v })}
+            />
+            <FormField
+              label="Owner Email"
+              type="email"
+              value={form.ownerEmail}
+              onChange={v => setForm({ ...form, ownerEmail: v })}
+              validate={v => v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Enter a valid email address' : null}
+            />
+            <PhoneInput
+              label="Owner Phone"
+              value={form.ownerPhone}
+              onChange={digits => setForm({ ...form, ownerPhone: digits })}
+            />
+            <FormField
+              label="Monthly Dues ($)"
+              type="number"
+              value={String(form.monthlyDues)}
+              onChange={v => setForm({ ...form, monthlyDues: parseFloat(v) || 0 })}
+              step="0.01"
+              min="0"
+            />
             <div className="md:col-span-2 flex gap-2">
-              <button type="submit" className="btn btn-primary">{editId ? 'Update' : 'Create'}</button>
+              <button type="submit" disabled={createUnit.isPending || updateUnit.isPending} className="btn btn-primary">
+                {(createUnit.isPending || updateUnit.isPending) ? 'Saving...' : editId ? 'Update' : 'Create'}
+              </button>
               <button type="button" onClick={resetForm} className="btn btn-secondary">Cancel</button>
             </div>
           </form>
@@ -58,7 +143,7 @@ export function UnitsPage() {
       )}
 
       {isLoading ? (
-        <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>
+        <TableSkeleton rows={5} cols={5} />
       ) : !units?.length ? (
         <div className="empty-state">
           <div className="empty-state-icon">🏠</div>
@@ -78,15 +163,15 @@ export function UnitsPage() {
                 {filtered?.map((u: any) => (
                   <tr key={u.id}>
                     <td className="font-medium">{u.address}</td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{u.lotNumber || '—'}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{u.lotNumber || '\u2014'}</td>
                     <td>
-                      <div>{u.ownerName || '—'}</div>
+                      <div>{u.ownerName || '\u2014'}</div>
                       {u.ownerEmail && <div className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>{u.ownerEmail}</div>}
                     </td>
-                    <td className="font-medium">${(u.monthlyDues / 100).toFixed(2)}</td>
+                    <td className="font-medium">{formatCurrency(u.monthlyDues)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <button onClick={() => startEdit(u)} className="btn btn-ghost btn-sm">Edit</button>
-                      <button onClick={() => { if (confirm('Delete this unit?')) deleteUnit.mutate({ id: u.id }); }} className="btn btn-danger btn-sm ml-1">Delete</button>
+                      <button onClick={() => handleDelete(u)} disabled={deleteUnit.isPending} className="btn btn-danger btn-sm ml-1">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -101,21 +186,21 @@ export function UnitsPage() {
                 <div className="flex justify-between">
                   <div>
                     <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>{u.address}</div>
-                    <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{u.ownerName || 'No owner'}{u.lotNumber ? ` · Lot ${u.lotNumber}` : ''}</div>
+                    <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{u.ownerName || 'No owner'}{u.lotNumber ? ` \u00b7 Lot ${u.lotNumber}` : ''}</div>
                   </div>
-                  <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>${(u.monthlyDues / 100).toFixed(2)}/mo</div>
+                  <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>{formatCurrency(u.monthlyDues)}/mo</div>
                 </div>
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => startEdit(u)} className="btn btn-ghost btn-sm">Edit</button>
-                  <button onClick={() => { if (confirm('Delete?')) deleteUnit.mutate({ id: u.id }); }} className="btn btn-danger btn-sm">Delete</button>
+                  <button onClick={() => handleDelete(u)} disabled={deleteUnit.isPending} className="btn btn-danger btn-sm">Delete</button>
                 </div>
               </div>
             ))}
           </div>
 
-          {filtered?.length === 0 && search && (
+          {filtered?.length === 0 && debouncedSearch && (
             <div className="card p-6 text-center text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-              No results for "{search}". <button onClick={() => setSearch('')} className="font-medium" style={{ color: 'var(--accent)' }}>Clear</button>
+              No results for "{debouncedSearch}". <button onClick={() => setSearch('')} className="font-medium" style={{ color: 'var(--accent)' }}>Clear</button>
             </div>
           )}
         </>

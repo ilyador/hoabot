@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { trpc } from '../trpc';
 import { useQueryClient } from '@tanstack/react-query';
+import { FormField } from '../components/FormField';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,17 +32,27 @@ export function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); login.mutate({ email, password }); }}>
-            <div className="mb-3">
-              <label className="label">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="input" placeholder="you@example.com" required />
-            </div>
-            <div className="mb-5">
-              <label className="label">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="input" placeholder="••••••••" required />
-            </div>
+          <form onSubmit={(e) => { e.preventDefault(); setError(''); login.mutate({ email, password }); }}>
+            <FormField
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              placeholder="you@example.com"
+              required
+              disabled={login.isPending}
+              className="mb-3"
+            />
+            <FormField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="••••••••"
+              required
+              disabled={login.isPending}
+              className="mb-5"
+            />
             <button type="submit" disabled={login.isPending} className="btn btn-primary w-full">
               {login.isPending ? 'Signing in...' : 'Sign In'}
             </button>

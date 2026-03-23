@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { trpc } from '../trpc';
 import { useQueryClient } from '@tanstack/react-query';
+import { FormField } from '../components/FormField';
 
 export function RegisterPage() {
   const [name, setName] = useState('');
@@ -32,19 +33,37 @@ export function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); register.mutate({ name, email, password }); }}>
-            <div className="mb-3">
-              <label className="label">Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className="input" placeholder="Your name" required />
-            </div>
-            <div className="mb-3">
-              <label className="label">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input" placeholder="you@example.com" required />
-            </div>
-            <div className="mb-5">
-              <label className="label">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="input" placeholder="Min 6 characters" required minLength={6} />
-            </div>
+          <form onSubmit={(e) => { e.preventDefault(); setError(''); register.mutate({ name, email, password }); }}>
+            <FormField
+              label="Name"
+              value={name}
+              onChange={setName}
+              placeholder="Your name"
+              required
+              disabled={register.isPending}
+              className="mb-3"
+            />
+            <FormField
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              placeholder="you@example.com"
+              required
+              disabled={register.isPending}
+              className="mb-3"
+            />
+            <FormField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Min 6 characters"
+              required
+              disabled={register.isPending}
+              className="mb-5"
+              validate={(v) => v.length > 0 && v.length < 6 ? 'Password must be at least 6 characters' : null}
+            />
             <button type="submit" disabled={register.isPending} className="btn btn-primary w-full">
               {register.isPending ? 'Creating account...' : 'Create Account'}
             </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { trpc } from '../trpc';
 import { useQueryClient } from '@tanstack/react-query';
@@ -53,9 +53,18 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
     document.documentElement.classList.toggle('dark', next);
   };
 
-  if (typeof document !== 'undefined') {
+  // Sync theme to DOM
+  useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
-  }
+  }, [darkMode]);
+
+  // Escape key closes sidebar
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSidebarOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [sidebarOpen]);
 
   const logout = trpc.auth.logout.useMutation({
     onSuccess: () => { queryClient.clear(); navigate('/login'); },
@@ -151,7 +160,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
           className="md:hidden flex items-center justify-between px-4 h-12"
           style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}
         >
-          <button onClick={() => setSidebarOpen(true)} className="text-base" style={{ color: 'var(--text-primary)' }}>☰</button>
+          <button onClick={() => setSidebarOpen(true)} className="text-base" style={{ color: 'var(--text-primary)' }} aria-label="Open menu">☰</button>
           <span style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '15px', color: 'var(--text-primary)' }}>🏘️ HOABot</span>
           <div className="w-6" />
         </header>

@@ -1,18 +1,46 @@
 import { useState } from 'react';
 import { trpc } from '../trpc';
+import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmDialog';
+import { CardSkeleton } from '../components/LoadingSkeleton';
+import { formatDateTime } from '../lib/format';
 
 export function AnnouncementsPage() {
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const utils = trpc.useUtils();
   const { data: announcements, isLoading } = trpc.announcements.list.useQuery();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', body: '' });
 
   const createAnn = trpc.announcements.create.useMutation({
-    onSuccess: () => { utils.announcements.list.invalidate(); utils.hoa.dashboard.invalidate(); setShowForm(false); setForm({ title: '', body: '' }); },
+    onSuccess: () => {
+      utils.announcements.list.invalidate();
+      utils.hoa.dashboard.invalidate();
+      setShowForm(false);
+      setForm({ title: '', body: '' });
+      toast('Announcement posted');
+    },
+    onError: (err) => toast(err.message, 'error'),
   });
   const deleteAnn = trpc.announcements.delete.useMutation({
-    onSuccess: () => { utils.announcements.list.invalidate(); utils.hoa.dashboard.invalidate(); },
+    onSuccess: () => {
+      utils.announcements.list.invalidate();
+      utils.hoa.dashboard.invalidate();
+      toast('Announcement deleted', 'warning');
+    },
+    onError: (err) => toast(err.message, 'error'),
   });
+
+  async function handleDelete(id: string, title: string) {
+    const ok = await confirm({
+      title: 'Delete announcement',
+      message: `Are you sure you want to delete "${title}"? This cannot be undone.`,
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (ok) deleteAnn.mutate({ id });
+  }
 
   return (
     <div>
@@ -38,7 +66,9 @@ export function AnnouncementsPage() {
                 className="input" required />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="btn btn-primary">Post</button>
+              <button type="submit" disabled={createAnn.isPending} className="btn btn-primary">
+                {createAnn.isPending ? 'Posting...' : 'Post'}
+              </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Cancel</button>
             </div>
           </form>
@@ -46,7 +76,7 @@ export function AnnouncementsPage() {
       )}
 
       {isLoading ? (
-        <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>
+        <CardSkeleton count={3} />
       ) : !announcements?.length ? (
         <div className="empty-state">
           <h3>No announcements yet</h3>
@@ -59,9 +89,9 @@ export function AnnouncementsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3>{ann.title}</h3>
-                  <div style={{ color: 'var(--text-tertiary)', fontSize: '12px', marginTop: '4px' }}>{new Date(ann.createdAt).toLocaleString()}</div>
+                  <div style={{ color: 'var(--text-tertiary)', fontSize: '12px', marginTop: '4px' }}>{formatDateTime(ann.createdAt)}</div>
                 </div>
-                <button onClick={() => { if (confirm('Delete?')) deleteAnn.mutate({ id: ann.id }); }} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>Delete</button>
+                <button onClick={() => handleDelete(ann.id, ann.title)} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>Delete</button>
               </div>
               <p style={{ color: 'var(--text-secondary)', marginTop: '12px', whiteSpace: 'pre-wrap' }}>{ann.body}</p>
             </div>

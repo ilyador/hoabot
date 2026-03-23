@@ -1,17 +1,28 @@
 import { useState, useEffect } from 'react';
 import { trpc } from '../trpc';
 import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmDialog';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
+import { FormField } from '../components/FormField';
+import { PhoneInput } from '../components/PhoneInput';
+import { FormSkeleton } from '../components/LoadingSkeleton';
+import { rawDigits } from '../lib/format';
 
 export function SettingsPage() {
   const { toast } = useToast();
   const utils = trpc.useUtils();
-  const { data: hoa } = trpc.hoa.get.useQuery();
+  const { data: hoa, isLoading: hoaLoading, isError: hoaError } = trpc.hoa.get.useQuery();
   const { data: stripeStatus } = trpc.stripe.status.useQuery();
   const { data: emailStatus } = trpc.email.status.useQuery();
-  const connectStripe = trpc.stripe.createConnectAccount.useMutation();
-  const checkOnboarding = trpc.stripe.checkOnboarding.useMutation();
-  const sendReminders = trpc.email.sendPaymentReminders.useMutation();
+  const connectStripe = trpc.stripe.createConnectAccount.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const checkOnboarding = trpc.stripe.checkOnboarding.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const sendReminders = trpc.email.sendPaymentReminders.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
   const updateHoa = trpc.hoa.update.useMutation({
     onSuccess: () => { utils.hoa.get.invalidate(); toast('Settings saved'); },
     onError: (err) => toast(err.message, 'error'),
@@ -20,24 +31,8 @@ export function SettingsPage() {
   // HOA info form
   const [hoaForm, setHoaForm] = useState({ name: '', address: '', phone: '', email: '' });
   useEffect(() => {
-    if (hoa) setHoaForm({ name: hoa.name, address: hoa.address || '', phone: hoa.phone || '', email: hoa.email || '' });
+    if (hoa) setHoaForm({ name: hoa.name, address: hoa.address || '', phone: rawDigits(hoa.phone || ''), email: hoa.email || '' });
   }, [hoa]);
-
-  // Phone auto-format: strip non-digits, format as (555) 123-4567
-  function handlePhoneChange(raw: string) {
-    const digits = raw.replace(/\D/g, '').slice(0, 10);
-    let formatted = '';
-    if (digits.length > 0) formatted = '(' + digits.slice(0, 3);
-    if (digits.length >= 3) formatted += ') ' + digits.slice(3, 6);
-    if (digits.length >= 6) formatted += '-' + digits.slice(6);
-    setHoaForm({ ...hoaForm, phone: formatted });
-  }
-
-  // Field validation (on blur)
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const errors: Record<string, string> = {};
-  if (touched.phone && hoaForm.phone && hoaForm.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a 10-digit phone number';
-  if (touched.email && hoaForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hoaForm.email)) errors.email = 'Enter a valid email address';
 
   // Late fee form
   const [feeForm, setFeeForm] = useState({
@@ -59,8 +54,8 @@ export function SettingsPage() {
     try {
       const result = await connectStripe.mutateAsync();
       window.open(result.url, '_blank');
-    } catch (err: any) {
-      toast(err.message, 'error');
+    } catch {
+      // onError handler already shows toast
     }
   }
 
@@ -70,9 +65,29 @@ export function SettingsPage() {
       const sent = results.filter((r: any) => r.sent).length;
       const failed = results.filter((r: any) => !r.sent).length;
       toast(`Payment reminders: ${sent} sent, ${failed} failed`, failed > 0 ? 'warning' : 'success');
-    } catch (err: any) {
-      toast(err.message, 'error');
+    } catch {
+      // onError handler already shows toast
     }
+  }
+
+  if (hoaLoading) {
+    return (
+      <div>
+        <h1 className="mb-6">Settings</h1>
+        <FormSkeleton fields={4} />
+      </div>
+    );
+  }
+
+  if (hoaError) {
+    return (
+      <div>
+        <h1 className="mb-6">Settings</h1>
+        <div className="card p-5">
+          <p style={{ color: 'var(--error)' }}>Failed to load HOA settings. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -82,25 +97,29 @@ export function SettingsPage() {
       {/* HOA Info */}
       <div className="card p-5 mb-6">
         <h2 className="mb-4">HOA Information</h2>
-        <form onSubmit={e => { e.preventDefault(); updateHoa.mutate(hoaForm); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">HOA Name</label>
-            <input type="text" value={hoaForm.name} onChange={e => setHoaForm({ ...hoaForm, name: e.target.value })} className="input" required />
-          </div>
-          <div>
-            <label className="label">Address</label>
+        <form onSubmit={e => { e.preventDefault(); updateHoa.mutate({ ...hoaForm, phone: hoaForm.phone }); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            label="HOA Name"
+            value={hoaForm.name}
+            onChange={v => setHoaForm({ ...hoaForm, name: v })}
+            required
+          />
+          <FormField label="Address" value={hoaForm.address} onChange={() => {}}>
             <AddressAutocomplete value={hoaForm.address} onChange={addr => setHoaForm({ ...hoaForm, address: addr })} />
-          </div>
-          <div>
-            <label className="label">Phone</label>
-            <input type="tel" value={hoaForm.phone} onChange={e => handlePhoneChange(e.target.value)} onBlur={() => setTouched(t => ({ ...t, phone: true }))} className="input" placeholder="(555) 123-4567" style={errors.phone ? { borderColor: 'var(--error)' } : {}} />
-            {errors.phone && <div className="text-[11px] mt-1" style={{ color: 'var(--error)' }}>{errors.phone}</div>}
-          </div>
-          <div>
-            <label className="label">Contact Email</label>
-            <input type="email" value={hoaForm.email} onChange={e => setHoaForm({ ...hoaForm, email: e.target.value })} onBlur={() => setTouched(t => ({ ...t, email: true }))} className="input" placeholder="board@yourhoa.com" style={errors.email ? { borderColor: 'var(--error)' } : {}} />
-            {errors.email && <div className="text-[11px] mt-1" style={{ color: 'var(--error)' }}>{errors.email}</div>}
-          </div>
+          </FormField>
+          <PhoneInput
+            label="Phone"
+            value={hoaForm.phone}
+            onChange={digits => setHoaForm({ ...hoaForm, phone: digits })}
+          />
+          <FormField
+            label="Contact Email"
+            type="email"
+            value={hoaForm.email}
+            onChange={v => setHoaForm({ ...hoaForm, email: v })}
+            placeholder="board@yourhoa.com"
+            validate={v => v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Enter a valid email address' : null}
+          />
           <div className="md:col-span-2">
             <button type="submit" disabled={updateHoa.isPending} className="btn btn-primary">
               {updateHoa.isPending ? 'Saving...' : 'Save HOA Info'}
@@ -118,8 +137,8 @@ export function SettingsPage() {
             lateFeeEnabled: feeForm.lateFeeEnabled,
             lateFeeType: feeForm.lateFeeType,
             lateFeeAmount: feeForm.lateFeeType === 'percent'
-              ? Math.round(feeForm.lateFeeAmount * 100)  // to basis points
-              : Math.round(feeForm.lateFeeAmount * 100),  // to cents
+              ? Math.round(feeForm.lateFeeAmount * 100)
+              : Math.round(feeForm.lateFeeAmount * 100),
             gracePeriodDays: feeForm.gracePeriodDays,
           });
         }} className="space-y-4">
@@ -190,6 +209,7 @@ export function SettingsPage() {
                 </button>
                 {stripeStatus.accountConnected && !stripeStatus.onboardingComplete && (
                   <button onClick={() => checkOnboarding.mutateAsync().then(r => toast(r.onboardingComplete ? 'Onboarding complete!' : 'Onboarding not yet complete', r.onboardingComplete ? 'success' : 'info'))}
+                    disabled={checkOnboarding.isPending}
                     className="btn btn-secondary">
                     Check Status
                   </button>
@@ -250,8 +270,12 @@ export function SettingsPage() {
 function SubscriptionSection() {
   const { toast } = useToast();
   const { data: subStatus } = trpc.subscription.status.useQuery();
-  const createCheckout = trpc.subscription.createCheckout.useMutation();
-  const portalUrl = trpc.subscription.portalUrl.useMutation();
+  const createCheckout = trpc.subscription.createCheckout.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const portalUrl = trpc.subscription.portalUrl.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
 
   const statusColors: Record<string, string> = {
     trialing: 'var(--info)',
@@ -305,7 +329,9 @@ function SubscriptionSection() {
                 try {
                   const r = await createCheckout.mutateAsync();
                   if (r.url) window.location.href = r.url;
-                } catch (err: any) { toast(err.message, 'error'); }
+                } catch {
+                  // onError handler already shows toast
+                }
               }} disabled={createCheckout.isPending || !subStatus.configured} className="btn btn-primary">
                 {createCheckout.isPending ? 'Loading...' : 'Start Free Trial ($20/mo after 30 days)'}
               </button>
@@ -314,7 +340,9 @@ function SubscriptionSection() {
                 try {
                   const r = await portalUrl.mutateAsync();
                   if (r.url) window.location.href = r.url;
-                } catch (err: any) { toast(err.message, 'error'); }
+                } catch {
+                  // onError handler already shows toast
+                }
               }} disabled={portalUrl.isPending} className="btn btn-secondary">
                 {portalUrl.isPending ? 'Loading...' : 'Manage Billing'}
               </button>
@@ -336,11 +364,15 @@ function SubscriptionSection() {
 
 function XeroSection() {
   const { toast } = useToast();
+  const confirm = useConfirm();
   const utils = trpc.useUtils();
   const { data: xeroStatus } = trpc.xero.status.useQuery();
-  const connectXero = trpc.xero.connectUrl.useMutation();
+  const connectXero = trpc.xero.connectUrl.useMutation({
+    onError: (err) => toast(err.message, 'error'),
+  });
   const disconnectXero = trpc.xero.disconnect.useMutation({
     onSuccess: () => { utils.xero.status.invalidate(); toast('Xero disconnected'); },
+    onError: (err) => toast(err.message, 'error'),
   });
   const syncContacts = trpc.xero.syncContacts.useMutation({
     onSuccess: (data) => toast(`Synced ${data.synced} contacts to Xero${data.failed ? `, ${data.failed} failed` : ''}`),
@@ -368,7 +400,9 @@ function XeroSection() {
               try {
                 const r = await connectXero.mutateAsync();
                 window.location.href = r.url;
-              } catch (err: any) { toast(err.message, 'error'); }
+              } catch {
+                // onError handler already shows toast
+              }
             }} disabled={connectXero.isPending} className="btn btn-primary">
               {connectXero.isPending ? 'Loading...' : 'Connect Xero'}
             </button>
@@ -383,7 +417,15 @@ function XeroSection() {
                 <button onClick={() => syncInvoices.mutate()} disabled={syncInvoices.isPending} className="btn btn-secondary btn-sm">
                   {syncInvoices.isPending ? 'Syncing...' : 'Sync Invoices'}
                 </button>
-                <button onClick={() => { if (confirm('Disconnect Xero?')) disconnectXero.mutate(); }} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>
+                <button onClick={async () => {
+                  const confirmed = await confirm({
+                    title: 'Disconnect Xero?',
+                    message: 'This will remove the Xero integration. You can reconnect later.',
+                    confirmText: 'Disconnect',
+                    variant: 'danger',
+                  });
+                  if (confirmed) disconnectXero.mutate();
+                }} disabled={disconnectXero.isPending} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }}>
                   Disconnect
                 </button>
               </div>

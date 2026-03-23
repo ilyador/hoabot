@@ -1,5 +1,7 @@
 import { trpc } from '../trpc';
 import { Link } from 'react-router-dom';
+import { CardSkeleton } from '../components/LoadingSkeleton';
+import { formatCurrency } from '../lib/format';
 
 function StatCard({ label, value, color, subtitle }: { label: string; value: string | number; color?: string; subtitle?: string }) {
   return (
@@ -11,10 +13,6 @@ function StatCard({ label, value, color, subtitle }: { label: string; value: str
       {subtitle && <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{subtitle}</div>}
     </div>
   );
-}
-
-function fmt(cents: number) {
-  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 }
 
 function CollectionBar({ paid, pending, overdue }: { paid: number; pending: number; overdue: number }) {
@@ -92,7 +90,20 @@ export function DashboardPage() {
   const { data: dashboard, isLoading } = trpc.hoa.dashboard.useQuery();
   const { data: hoa } = trpc.hoa.get.useQuery();
 
-  if (isLoading) return <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div>
+        <div className="mb-6">
+          <div className="h-7 w-48 animate-pulse rounded" style={{ background: 'var(--border)' }} />
+        </div>
+        <CardSkeleton count={4} />
+        <div className="mt-5">
+          <CardSkeleton count={3} />
+        </div>
+      </div>
+    );
+  }
+
   if (!dashboard) return <div style={{ color: 'var(--text-tertiary)' }}>No data</div>;
 
   return (
@@ -104,10 +115,10 @@ export function DashboardPage() {
 
       <Checklist dashboard={dashboard} />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <StatCard label="Total Units" value={dashboard.totalUnits} subtitle={`${dashboard.totalUnits} properties`} />
-        <StatCard label="Collected" value={fmt(dashboard.totalCollected)} color="text-green-600 dark:text-green-400" />
-        <StatCard label="Outstanding" value={fmt(dashboard.totalOutstanding)} color="text-amber-600 dark:text-amber-400" />
+        <StatCard label="Collected" value={formatCurrency(dashboard.totalCollected)} color="text-green-600 dark:text-green-400" />
+        <StatCard label="Outstanding" value={formatCurrency(dashboard.totalOutstanding)} color="text-amber-600 dark:text-amber-400" />
         <StatCard label="Overdue" value={dashboard.overdueInvoices} color={dashboard.overdueInvoices > 0 ? 'text-red-600 dark:text-red-400' : ''} subtitle={dashboard.overdueInvoices === 0 ? 'All clear' : 'Needs attention'} />
       </div>
 

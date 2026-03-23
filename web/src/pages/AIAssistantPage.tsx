@@ -5,11 +5,17 @@ import { useToast } from '../components/Toast';
 export function AIAssistantPage() {
   const [activeTab, setActiveTab] = useState<'chat' | 'notice' | 'minutes'>('chat');
 
+  const tabDescriptions: Record<string, string> = {
+    chat: 'Ask questions about your CC&Rs and governing documents. The AI will search indexed documents to provide accurate answers with source citations.',
+    notice: 'Automatically generate formal violation notice letters based on reported violations. You can edit the letter before sending it via email.',
+    minutes: 'Paste your raw meeting notes and the AI will format them into professional meeting minutes with motions, votes, and action items.',
+  };
+
   return (
     <div>
       <h1 className="mb-5">AI Assistant</h1>
 
-      <div className="flex gap-1.5 mb-5">
+      <div className="flex gap-1.5 mb-2">
         {[
           { id: 'chat' as const, label: 'CC&R Chatbot' },
           { id: 'notice' as const, label: 'Violation Notice' },
@@ -21,6 +27,10 @@ export function AIAssistantPage() {
           </button>
         ))}
       </div>
+
+      <p className="text-[13px] mb-5" style={{ color: 'var(--text-secondary)' }}>
+        {tabDescriptions[activeTab]}
+      </p>
 
       {activeTab === 'chat' && <CCRChat />}
       {activeTab === 'notice' && <ViolationNoticeGenerator />}
@@ -60,9 +70,25 @@ function CCRChat() {
     } catch (err: any) { toast(`Indexing failed: ${err.message}`, 'error'); }
   }
 
+  const hasCCRDocuments = documents && documents.length > 0;
+
   return (
     <div className="space-y-3">
-      {documents && documents.length > 0 && (
+      {!hasCCRDocuments && (
+        <div className="card p-4" style={{ background: 'var(--warning-muted)', border: '1px solid var(--warning)20' }}>
+          <div className="flex items-start gap-3">
+            <span className="text-[18px]">!</span>
+            <div>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--warning)' }}>No CC&R documents indexed</div>
+              <p className="text-[12px] mt-1" style={{ color: 'var(--text-secondary)' }}>
+                Upload your CC&R documents on the <a href="/documents" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Documents page</a> first, then return here to index them for AI search. Without indexed documents, the chatbot cannot answer questions.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {hasCCRDocuments && (
         <div className="card p-3">
           <div className="text-[12px] font-medium mb-2" style={{ color: 'var(--text-tertiary)' }}>CC&R Documents (click to index for AI)</div>
           <div className="flex gap-2 flex-wrap">
@@ -80,7 +106,7 @@ function CCRChat() {
           <div className="text-center py-12" style={{ color: 'var(--text-tertiary)' }}>
             <div className="text-[32px] mb-2 opacity-50">💬</div>
             <div className="text-[14px]">Ask a question about your HOA's governing documents.</div>
-            {(!documents || documents.length === 0) && (
+            {!hasCCRDocuments && (
               <div className="text-[12px] mt-2" style={{ color: 'var(--warning)' }}>Upload CC&R documents in the Documents page first, then index them here.</div>
             )}
           </div>
@@ -186,7 +212,7 @@ function MeetingMinutesGenerator() {
         <div className="mb-3">
           <label className="label">Paste Raw Meeting Notes</label>
           <textarea value={rawNotes} onChange={e => setRawNotes(e.target.value)} rows={6} className="input"
-            placeholder={"Meeting started 7pm. Board members present: John, Sarah, Mike.\nDiscussed pool maintenance budget — $5000 approved, Mike motioned, Sarah seconded, passed 3-0.\nNext meeting April 15."} />
+            placeholder={"Example:\nMeeting called to order at 7:00 PM by President Jane Smith.\nBoard members present: Jane Smith, John Doe, Sarah Lee.\n\n1. Pool maintenance contract — renewed with AquaCare for $12,000/year. Motion by John, seconded by Sarah. Passed 3-0.\n2. Parking enforcement — new towing policy effective May 1. Warnings to be sent first.\n3. Budget review — Q1 spending on track. Reserve fund at $45,000.\n\nMeeting adjourned at 8:15 PM. Next meeting: April 15."} />
         </div>
         <button type="submit" disabled={generateMinutes.isPending || !rawNotes.trim()} className="btn btn-primary">
           {generateMinutes.isPending ? 'Generating...' : 'Generate Minutes'}
