@@ -1,392 +1,785 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>HOABot | HOA management on autopilot.</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "surface-variant": "#313540",
-              "surface-tint": "#c3c0ff",
-              "on-error-container": "#ffdad6",
-              "secondary-fixed": "#71fcb6",
-              "background": "#0f131d",
-              "on-primary-fixed-variant": "#321ed2",
-              "secondary-container": "#00b173",
-              "surface-container-low": "#171b26",
-              "on-surface-variant": "#c7c4d8",
-              "outline": "#918fa1",
-              "primary": "#c3c0ff",
-              "primary-fixed": "#e2dfff",
-              "secondary-fixed-dim": "#51df9c",
-              "tertiary-fixed-dim": "#ffb68f",
-              "on-secondary": "#003822",
-              "on-secondary-container": "#003b24",
-              "surface-container-lowest": "#0a0e18",
-              "tertiary": "#ffb68f",
-              "tertiary-fixed": "#ffdbca",
-              "tertiary-container": "#be5400",
-              "error-container": "#93000a",
-              "on-secondary-fixed": "#002112",
-              "on-primary": "#1d00a5",
-              "primary-fixed-dim": "#c3c0ff",
-              "surface-container-highest": "#313540",
-              "on-tertiary-fixed-variant": "#773200",
-              "on-tertiary-fixed": "#331100",
-              "on-tertiary-container": "#fffaf9",
-              "error": "#ffb4ab",
-              "primary-container": "#635bff",
-              "on-primary-fixed": "#0f0069",
-              "on-background": "#dfe2f1",
-              "surface": "#0f131d",
-              "surface-container-high": "#262a35",
-              "on-surface": "#dfe2f1",
-              "inverse-on-surface": "#2c303b",
-              "secondary": "#51df9c",
-              "on-primary-container": "#fefaff",
-              "outline-variant": "#464555",
-              "on-error": "#690005",
-              "surface-dim": "#0f131d",
-              "on-secondary-fixed-variant": "#005233",
-              "inverse-primary": "#4c42e9",
-              "surface-container": "#1c1f2a",
-              "inverse-surface": "#dfe2f1",
-              "surface-bright": "#353944",
-              "on-tertiary": "#542100"
-            },
-            fontFamily: {
-              "headline": ["Manrope"],
-              "body": ["Inter"],
-              "label": ["Inter"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-          },
-        },
-      }
-    </script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOABot — Your neighborhood, managed by something that doesn't sleep</title>
+<meta name="description" content="AI-powered HOA management. Dues collection, violation tracking, CC&R answers. Built for volunteer boards who'd rather not be doing this.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-      .material-symbols-outlined {
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      }
-      .glass-card {
-        background: rgba(28, 31, 42, 0.7);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-      }
-      .obsidian-glow {
-        box-shadow: 0 0 40px rgba(99, 91, 255, 0.08);
-      }
-      .luminous-button {
-        box-shadow: 0 0 15px rgba(99, 91, 255, 0.3);
-      }
-    </style>
+:root {
+  --sage: #4A5D3F;
+  --sage-light: #6B8A5E;
+  --sage-muted: #8BA07E;
+  --cream: #F7F3EC;
+  --cream-dark: #EDE7DB;
+  --warm-white: #FDFCF9;
+  --charcoal: #1E1E1E;
+  --charcoal-light: #3A3A3A;
+  --terra: #C4533A;
+  --terra-light: #E8826D;
+  --terra-muted: rgba(196, 83, 58, 0.08);
+  --text: #2C2C2C;
+  --text-light: #6B6B6B;
+  --text-faint: #9B9B9B;
+  --rule: rgba(74, 93, 63, 0.15);
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'Libre Franklin', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+a { color: var(--terra); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* === NAV === */
+nav {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  background: rgba(247, 243, 236, 0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--sage); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-light); letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; }
+.nav-links a:hover { color: var(--charcoal); text-decoration: none; }
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  background: var(--sage);
+  color: var(--warm-white);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-cta:hover { background: var(--charcoal); text-decoration: none; }
+.btn-outline {
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--sage);
+  border: 1.5px solid var(--sage);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+}
+.btn-outline:hover { background: var(--sage); color: var(--warm-white); text-decoration: none; }
+
+/* === HERO === */
+.hero {
+  padding: 100px 0 80px;
+  position: relative;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.hero-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sage);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-label::before {
+  content: '';
+  width: 24px;
+  height: 1.5px;
+  background: var(--sage);
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(42px, 5vw, 64px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--charcoal);
+  margin-bottom: 24px;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--sage);
+}
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-light);
+  margin-bottom: 36px;
+  max-width: 460px;
+}
+.hero-actions { display: flex; gap: 16px; align-items: center; }
+.hero-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 16px;
+}
+
+/* Violation notice artifact */
+.artifact {
+  background: var(--warm-white);
+  border: 1px solid var(--cream-dark);
+  border-radius: 2px;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+  transform: rotate(1.2deg);
+  transition: transform 0.3s ease;
+}
+.artifact:hover { transform: rotate(0deg); }
+.artifact::before {
+  content: 'SAMPLE';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-family: var(--sans);
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(196, 83, 58, 0.06);
+  letter-spacing: 0.2em;
+  pointer-events: none;
+}
+.artifact-header {
+  text-align: center;
+  border-bottom: 2px solid var(--charcoal);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+.artifact-header h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+}
+.artifact-header p {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.artifact-body {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-light);
+}
+.artifact-body .field {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+.artifact-body .field-label { font-weight: 600; color: var(--text); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.artifact-body .field-value { font-family: var(--mono); font-size: 12px; }
+.artifact-body .field-value.overdue { color: var(--terra); font-weight: 600; }
+.artifact-stamp {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background: var(--terra-muted);
+  border-left: 3px solid var(--terra);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--terra);
+}
+
+/* === DIVIDER === */
+.divider {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+/* === PAIN SECTION === */
+.pain {
+  padding: 80px 0;
+}
+.pain-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 60px;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sage);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 16px;
+}
+.pain-header h2 {
+  font-family: var(--serif);
+  font-size: 36px;
+  letter-spacing: -0.02em;
+  color: var(--charcoal);
+  line-height: 1.2;
+}
+.pain-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.pain-card {
+  background: var(--warm-white);
+  padding: 40px 32px;
+}
+.pain-number {
+  font-family: var(--serif);
+  font-size: 48px;
+  color: var(--cream-dark);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.pain-card h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--charcoal);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+.pain-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-light);
+}
+
+/* === FEATURES === */
+.features {
+  padding: 80px 0;
+  background: var(--charcoal);
+  color: var(--cream);
+}
+.features .section-label { color: var(--sage-light); }
+.features-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 64px;
+  align-items: end;
+}
+.features-header h2 {
+  font-family: var(--serif);
+  font-size: 40px;
+  letter-spacing: -0.02em;
+  color: var(--cream);
+  line-height: 1.15;
+}
+.features-header p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-faint);
+  padding-bottom: 8px;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.06);
+}
+.feature-card {
+  background: var(--charcoal);
+  padding: 36px 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+.feature-card:hover { background: var(--charcoal-light); }
+.feature-icon {
+  font-size: 28px;
+  margin-bottom: 20px;
+  display: block;
+}
+.feature-card h3 {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--cream);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.feature-card p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(247, 243, 236, 0.55);
+}
+
+/* === HOW === */
+.how {
+  padding: 80px 0;
+}
+.how-header {
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto 60px;
+}
+.how-header h2 {
+  font-family: var(--serif);
+  font-size: 36px;
+  letter-spacing: -0.02em;
+  color: var(--charcoal);
+}
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  position: relative;
+}
+.how-steps::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 16.66%;
+  right: 16.66%;
+  height: 1px;
+  background: var(--rule);
+}
+.step { text-align: center; position: relative; }
+.step-num {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--warm-white);
+  border: 2px solid var(--sage);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--sage);
+  position: relative;
+  z-index: 1;
+}
+.step h3 {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--charcoal);
+  margin-bottom: 10px;
+}
+.step p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-light);
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+/* === QUOTE === */
+.quote-section {
+  padding: 60px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.quote-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+.quote-inner blockquote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.5;
+  color: var(--charcoal);
+  margin-bottom: 16px;
+}
+.quote-inner cite {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-style: normal;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+}
+
+/* === CTA === */
+.cta {
+  padding: 100px 0;
+  background: var(--sage);
+  color: var(--warm-white);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Cpath d='M30 0v60M0 30h60'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.cta h2 {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 44px);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  position: relative;
+}
+.cta p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 36px;
+  position: relative;
+}
+.cta-form {
+  display: flex;
+  gap: 0;
+  max-width: 440px;
+  margin: 0 auto;
+  position: relative;
+}
+.cta-form input {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cta-form input::placeholder { color: rgba(255,255,255,0.4); }
+.cta-form input:focus { border-color: rgba(255,255,255,0.5); }
+.cta-form button {
+  padding: 14px 28px;
+  background: var(--charcoal);
+  color: var(--cream);
+  border: 2px solid var(--charcoal);
+  border-radius: 0 4px 4px 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.cta-form button:hover { background: #000; border-color: #000; }
+.cta-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 16px;
+  position: relative;
+}
+
+/* === FOOTER === */
+footer {
+  padding: 40px 0;
+  background: var(--charcoal);
+  color: rgba(247,243,236,0.4);
+  font-size: 13px;
+}
+footer .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+footer .nav-logo { color: var(--cream); font-size: 18px; }
+footer .nav-logo span { color: var(--sage-light); }
+.footer-links { display: flex; gap: 28px; }
+.footer-links a { color: rgba(247,243,236,0.4); font-size: 12px; text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--cream); }
+.footer-copy { font-size: 12px; }
+.soon-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  background: rgba(196, 83, 58, 0.15);
+  color: var(--terra-light);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-left > * {
+  animation: fadeUp 0.7s ease-out both;
+}
+.hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-left > *:nth-child(2) { animation-delay: 0.2s; }
+.hero-left > *:nth-child(3) { animation-delay: 0.35s; }
+.hero-left > *:nth-child(4) { animation-delay: 0.5s; }
+.hero-left > *:nth-child(5) { animation-delay: 0.6s; }
+.artifact {
+  animation: fadeUp 0.8s ease-out 0.4s both;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .hero-grid, .features-header { grid-template-columns: 1fr; gap: 48px; }
+  .pain-grid, .features-grid, .how-steps { grid-template-columns: 1fr; }
+  .how-steps::before { display: none; }
+  .nav-links a:not(.btn-cta) { display: none; }
+  .artifact { transform: rotate(0); }
+  .hero { padding: 60px 0 40px; }
+  .cta-form { flex-direction: column; }
+  .cta-form input { border-right: 2px solid rgba(255,255,255,0.2); border-radius: 4px; }
+  .cta-form button { border-radius: 4px; }
+}
+</style>
 </head>
-<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-[#171b26]/70 backdrop-blur-xl obsidian-glow">
-<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
-<div class="text-xl font-bold tracking-tighter text-[#dfe2f1] font-headline">HOABot</div>
-<div class="hidden md:flex gap-8 font-manrope text-sm font-medium tracking-tight">
-<a class="text-[#c7c4d8] hover:text-[#dfe2f1] hover:bg-[#1c1f2a]/50 px-3 py-1 rounded-full transition-all duration-300" href="#">Features</a>
-<a class="text-[#c7c4d8] hover:text-[#dfe2f1] hover:bg-[#1c1f2a]/50 px-3 py-1 rounded-full transition-all duration-300" href="#">Pricing</a>
-<a class="text-[#c7c4d8] hover:text-[#dfe2f1] hover:bg-[#1c1f2a]/50 px-3 py-1 rounded-full transition-all duration-300" href="#">About</a>
-</div>
-<button class="bg-primary-container text-on-primary-container font-manrope text-sm font-semibold px-6 py-2 rounded-full luminous-button hover:scale-105 active:scale-95 transition-all duration-200">
-                Get Early Access
-            </button>
-</div>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="nav-logo"><span>HOA</span>Bot</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
+      <a href="#waitlist" class="btn-cta">Get Early Access</a>
+    </div>
+  </div>
 </nav>
-<main class="pt-24">
-<!-- Hero Section -->
-<section class="relative overflow-hidden px-8 pt-20 pb-32 max-w-7xl mx-auto flex flex-col items-start lg:items-center lg:text-center">
-<div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-container/10 blur-[120px] rounded-full"></div>
-<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/5 blur-[120px] rounded-full"></div>
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/15 mb-8">
-<span class="w-2 h-2 rounded-full bg-secondary"></span>
-<span class="text-xs font-label font-medium text-on-surface-variant uppercase tracking-widest">Now in Private Beta</span>
-</div>
-<h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface mb-6 leading-[1.1]">
-                HOA management on <br class="hidden md:block"/><span class="text-primary">autopilot.</span>
-</h1>
-<p class="font-body text-lg md:text-xl text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
-                AI-powered dues collection, violation tracking, and resident communication — so your volunteer board can stop drowning in spreadsheets.
-            </p>
-<div class="flex flex-col sm:flex-row gap-4">
-<button class="bg-primary-container text-on-primary-container font-headline font-bold px-8 py-4 rounded-full luminous-button text-lg hover:scale-105 transition-all">
-                    Get Early Access
-                </button>
-<button class="glass-card text-on-surface border border-outline-variant/15 font-headline font-bold px-8 py-4 rounded-full text-lg hover:bg-surface-container-high transition-all">
-                    App Coming Soon
-                </button>
-</div>
-<!-- Dashboard Mockup -->
-<div class="mt-20 w-full max-w-5xl mx-auto relative group">
-<div class="absolute inset-0 bg-primary-container/10 blur-3xl rounded-[3rem] group-hover:bg-primary-container/20 transition-all duration-500"></div>
-<div class="relative bg-surface-container-lowest border border-outline-variant/15 rounded-3xl overflow-hidden shadow-2xl">
-<div class="flex border-b border-outline-variant/15 p-4 items-center justify-between bg-surface-container-low/50">
-<div class="flex gap-2">
-<div class="w-3 h-3 rounded-full bg-error/40"></div>
-<div class="w-3 h-3 rounded-full bg-tertiary/40"></div>
-<div class="w-3 h-3 rounded-full bg-secondary/40"></div>
-</div>
-<div class="bg-surface-container-lowest px-4 py-1 rounded-lg text-xs font-mono text-outline/60">dashboard.hoabot.ai</div>
-<div class="w-10"></div>
-</div>
-<div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-<!-- Stats -->
-<div class="md:col-span-2 space-y-8">
-<div class="grid grid-cols-2 gap-4">
-<div class="p-6 rounded-2xl bg-surface-container border border-outline-variant/10">
-<div class="text-on-surface-variant text-xs mb-2 uppercase tracking-wider font-semibold">Total Dues Collected</div>
-<div class="text-3xl font-headline font-bold text-on-surface">$142,450</div>
-<div class="mt-2 text-secondary text-xs font-medium">↑ 12% vs last month</div>
-</div>
-<div class="p-6 rounded-2xl bg-surface-container border border-outline-variant/10">
-<div class="text-on-surface-variant text-xs mb-2 uppercase tracking-wider font-semibold">Active Violations</div>
-<div class="text-3xl font-headline font-bold text-on-surface">14</div>
-<div class="mt-2 text-tertiary text-xs font-medium">4 require inspection</div>
-</div>
-</div>
-<div class="h-64 w-full bg-surface-container/50 rounded-2xl border border-outline-variant/10 p-6">
-<div class="flex justify-between items-center mb-6">
-<span class="text-sm font-bold">Revenue Stream</span>
-<span class="material-symbols-outlined text-outline">more_horiz</span>
-</div>
-<div class="flex items-end justify-between h-32 gap-2">
-<div class="w-full bg-primary/20 rounded-t-lg h-[40%]"></div>
-<div class="w-full bg-primary/40 rounded-t-lg h-[60%]"></div>
-<div class="w-full bg-primary-container rounded-t-lg h-[85%]"></div>
-<div class="w-full bg-primary/60 rounded-t-lg h-[55%]"></div>
-<div class="w-full bg-primary/30 rounded-t-lg h-[70%]"></div>
-<div class="w-full bg-primary-container rounded-t-lg h-[95%]"></div>
-<div class="w-full bg-primary/20 rounded-t-lg h-[30%]"></div>
-</div>
-</div>
-</div>
-<!-- Tasks -->
-<div class="space-y-4">
-<div class="text-sm font-bold mb-4">Urgent Actions</div>
-<div class="p-4 rounded-xl bg-surface-container-high/50 border border-secondary/20 flex gap-4 items-start">
-<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-<div>
-<div class="text-xs font-bold text-on-surface">Review Roof Permit #241</div>
-<div class="text-[10px] text-on-surface-variant">Submitted 2 hours ago</div>
-</div>
-</div>
-<div class="p-4 rounded-xl bg-surface-container-high/50 border border-outline-variant/10 flex gap-4 items-start">
-<span class="material-symbols-outlined text-outline">info</span>
-<div>
-<div class="text-xs font-bold text-on-surface">Send Dues Reminders</div>
-<div class="text-[10px] text-on-surface-variant">12 residents outstanding</div>
-</div>
-</div>
-<div class="p-4 rounded-xl bg-surface-container-high/50 border border-outline-variant/10 flex gap-4 items-start">
-<span class="material-symbols-outlined text-outline">info</span>
-<div>
-<div class="text-xs font-bold text-on-surface">Upload Meeting Minutes</div>
-<div class="text-[10px] text-on-surface-variant">From Nov 14 board meeting</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-label">AI-Powered HOA Management</div>
+        <h1>Your neighborhood,<br>managed by something<br>that <em>doesn't sleep</em></h1>
+        <p class="hero-sub">Dues collection, violation tracking, CC&R answers, meeting minutes — handled by an AI so your volunteer board can go back to having a life.</p>
+        <div class="hero-actions">
+          <a href="#waitlist" class="btn-cta">Join the Waitlist</a>
+          <a href="/app" class="btn-outline">Open App <span class="soon-tag">Soon</span></a>
+        </div>
+        <p class="hero-note">Free during beta · No credit card · Built by an ex-treasurer who quit</p>
+      </div>
+      <div class="artifact">
+        <div class="artifact-header">
+          <h3>Sunset Ridge HOA</h3>
+          <p>Notice of Assessment — Unit 101</p>
+        </div>
+        <div class="artifact-body">
+          <div class="field">
+            <span class="field-label">Owner</span>
+            <span class="field-value">Alice Johnson</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Address</span>
+            <span class="field-value">101 Sunset Blvd</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Assessment</span>
+            <span class="field-value">$250.00</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Due Date</span>
+            <span class="field-value">April 1, 2026</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Status</span>
+            <span class="field-value overdue">14 Days Overdue</span>
+          </div>
+          <div class="artifact-stamp">
+            AI-generated reminder sent · 3 automated follow-ups · 0 human hours spent
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- Pain Point Cards -->
-<section class="bg-surface-container-low py-32">
-<div class="max-w-7xl mx-auto px-8">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<div class="p-10 rounded-[2rem] bg-surface-container border border-outline-variant/10">
-<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-secondary">table_chart</span>
-</div>
-<h3 class="font-headline text-xl font-bold mb-4">Dues tracked in Excel</h3>
-<p class="text-on-surface-variant text-sm leading-relaxed">
-                            Your treasurer spends 10+ hours a week chasing checks and reconciling spreadsheets. Then they quit.
-                        </p>
-</div>
-<div class="p-10 rounded-[2rem] bg-surface-container border border-outline-variant/10">
-<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-secondary">gavel</span>
-</div>
-<h3 class="font-headline text-xl font-bold mb-4">Inconsistent Violations</h3>
-<p class="text-on-surface-variant text-sm leading-relaxed">
-                            Unit 101 gets fined. Unit 205 doesn't. Same violation. That's how you get sued.
-                        </p>
-</div>
-<div class="p-10 rounded-[2rem] bg-surface-container border border-outline-variant/10">
-<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-secondary">history_edu</span>
-</div>
-<h3 class="font-headline text-xl font-bold mb-4">Knowledge Loss</h3>
-<p class="text-on-surface-variant text-sm leading-relaxed">
-                            When board members quit, passwords, vendor contacts, and institutional memory leave with them. Gone.
-                        </p>
-</div>
-</div>
-</div>
+
+<hr class="divider">
+
+<section class="pain">
+  <div class="container">
+    <div class="pain-header">
+      <div class="section-label">The problem</div>
+      <h2>Running an HOA shouldn't<br>feel like a second job</h2>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-number">01</div>
+        <h3>The treasurer quits every 18 months</h3>
+        <p>They spend 10+ hours a week chasing checks, reconciling spreadsheets, and fielding complaints. Then they quit. The next person inherits chaos.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-number">02</div>
+        <h3>Enforcement is a lawsuit waiting to happen</h3>
+        <p>Unit 101 gets fined for a brown lawn. Unit 205 doesn't. Same violation, different treatment. That's selective enforcement. That's how you get sued.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-number">03</div>
+        <h3>Nobody reads the CC&Rs until they're angry</h3>
+        <p>"Can I build a fence?" takes 3 weeks, 4 emails, and a board meeting to answer. The answer was in Section 4.3(b) the entire time.</p>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- Bento Grid Features -->
-<section class="py-32 px-8 max-w-7xl mx-auto">
-<div class="text-center mb-20">
-<h2 class="font-headline text-4xl font-bold mb-4">Everything you need to lead.</h2>
-<p class="text-on-surface-variant">A complete operating system for modern communities.</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-<!-- Smart Dues Collection (Large) -->
-<div class="md:col-span-8 glass-card border border-outline-variant/15 rounded-3xl p-11 relative overflow-hidden group">
-<div class="relative z-10 max-w-md">
-<h4 class="font-headline text-2xl font-bold mb-4">Smart Dues Collection</h4>
-<p class="text-on-surface-variant text-sm mb-6">Automate invoicing, late fees, and secure payment processing. One-click reports for the treasurer.</p>
-<div class="flex gap-3">
-<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider">Automated</span>
-<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">Secure</span>
-</div>
-</div>
-<div class="absolute right-0 bottom-0 translate-y-4 translate-x-4 opacity-20 group-hover:opacity-40 transition-opacity">
-<span class="material-symbols-outlined text-[200px] text-primary">payments</span>
-</div>
-</div>
-<!-- AI Document Assistant -->
-<div class="md:col-span-4 glass-card border border-outline-variant/15 rounded-3xl p-11">
-<h4 class="font-headline text-2xl font-bold mb-4">AI Assistant</h4>
-<p class="text-on-surface-variant text-sm mb-6">Ask questions about your bylaws and get instant, cited answers.</p>
-<div class="mt-4 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/20 italic text-xs text-outline">
-                        "What is the policy for fence height in phase 2?"
-                    </div>
-</div>
-<!-- Violation Tracking -->
-<div class="md:col-span-4 glass-card border border-outline-variant/15 rounded-3xl p-11">
-<h4 class="font-headline text-2xl font-bold mb-4">Violations</h4>
-<p class="text-on-surface-variant text-sm">Snap a photo, let the AI categorize the violation and draft the notice.</p>
-</div>
-<!-- Meeting Minutes AI (Wide) -->
-<div class="md:col-span-8 glass-card border border-outline-variant/15 rounded-3xl p-11 flex flex-col md:flex-row gap-8 items-center">
-<div class="flex-1">
-<h4 class="font-headline text-2xl font-bold mb-4">Meeting Minutes AI</h4>
-<p class="text-on-surface-variant text-sm">Transcribe board meetings and automatically generate summarized action items and minutes.</p>
-</div>
-<div class="w-full md:w-1/3 bg-surface-container rounded-2xl p-4 border border-outline-variant/10">
-<div class="h-2 w-2/3 bg-outline/20 rounded-full mb-2"></div>
-<div class="h-2 w-full bg-outline/10 rounded-full mb-2"></div>
-<div class="h-2 w-1/2 bg-outline/20 rounded-full"></div>
-</div>
-</div>
-<!-- Financial Dashboard -->
-<div class="md:col-span-6 glass-card border border-outline-variant/15 rounded-3xl p-11">
-<h4 class="font-headline text-2xl font-bold mb-4">Financial Dashboard</h4>
-<p class="text-on-surface-variant text-sm">Real-time visibility into reserves, operating budgets, and capital expenses.</p>
-</div>
-<!-- Resident Portal -->
-<div class="md:col-span-6 glass-card border border-outline-variant/15 rounded-3xl p-11">
-<h4 class="font-headline text-2xl font-bold mb-4">Resident Portal</h4>
-<p class="text-on-surface-variant text-sm">A modern mobile app for residents to pay dues, request repairs, and view notices.</p>
-</div>
-</div>
+
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <div>
+        <div class="section-label">What it does</div>
+        <h2>Everything your board needs.<br>Nothing it doesn't.</h2>
+      </div>
+      <p>Built by a developer who was an HOA treasurer. He quit. Then he built this. Every feature exists because a real board member needed it and nothing else had it.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📄</span>
+        <h3>Smart Dues Collection</h3>
+        <p>Automated invoicing, payment tracking, late fee calculation. See who paid and who didn't without opening a spreadsheet ever again.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>CC&R Chatbot</h3>
+        <p>Upload your governing documents. Residents ask questions. The AI answers with exact section citations. Not "maybe check section 4" — the actual answer.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⚖️</span>
+        <h3>Violation Tracking</h3>
+        <p>Report, notify, escalate — with a complete audit trail. AI generates formal notice letters referencing your specific CC&R sections.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📋</span>
+        <h3>Meeting Minutes</h3>
+        <p>Paste your raw notes. Get properly formatted minutes with motions, vote counts, and action items extracted. The volunteer secretary's dream.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Financial Dashboard</h3>
+        <p>Collection rates, outstanding balances, operating vs reserve fund tracking. The one place where "where does my money go?" gets answered.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📬</span>
+        <h3>Resident Communication</h3>
+        <p>Announcements, payment reminders, violation notices. Email delivery with communication history logged. No more "I never received that."</p>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- How It Works -->
-<section class="bg-surface-container-low py-32">
-<div class="max-w-7xl mx-auto px-8">
-<div class="text-center mb-20">
-<h2 class="font-headline text-4xl font-bold mb-4">Onboard in minutes.</h2>
-<p class="text-on-surface-variant">Three steps to a more peaceful community.</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-16 relative">
-<div class="hidden md:block absolute top-12 left-0 w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent"></div>
-<div class="relative z-10 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center border border-primary/20 mb-8 shadow-xl">
-<span class="material-symbols-outlined text-primary text-4xl">home</span>
-</div>
-<h5 class="font-headline text-xl font-bold mb-3">1. Set up your community</h5>
-<p class="text-on-surface-variant text-sm">Define your boundaries, units, and board member roles.</p>
-</div>
-<div class="relative z-10 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center border border-primary/20 mb-8 shadow-xl">
-<span class="material-symbols-outlined text-primary text-4xl">upload_file</span>
-</div>
-<h5 class="font-headline text-xl font-bold mb-3">2. Upload your documents</h5>
-<p class="text-on-surface-variant text-sm">Our AI scans your CC&amp;Rs and bylaws to understand your rules.</p>
-</div>
-<div class="relative z-10 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center border border-primary/20 mb-8 shadow-xl">
-<span class="material-symbols-outlined text-primary text-4xl">smart_toy</span>
-</div>
-<h5 class="font-headline text-xl font-bold mb-3">3. Let the AI handle the rest</h5>
-<p class="text-on-surface-variant text-sm">Sit back as HOABot starts tracking dues and facilitating board work.</p>
-</div>
-</div>
-</div>
+
+<section class="how" id="how">
+  <div class="container">
+    <div class="how-header">
+      <div class="section-label">Getting started</div>
+      <h2>Three steps to sanity</h2>
+    </div>
+    <div class="how-steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Set up your community</h3>
+        <p>Add your units, owners, and monthly dues. Takes about 10 minutes for a 50-unit HOA.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Upload your documents</h3>
+        <p>CC&Rs, bylaws, meeting minutes. The AI indexes everything so residents can self-serve.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Let the AI handle the rest</h3>
+        <p>Automated reminders, instant CC&R answers, consistent violation tracking. You steer. It operates.</p>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- Waitlist Section -->
-<section class="py-32 px-8">
-<div class="max-w-4xl mx-auto bg-primary-container/10 border border-primary-container/20 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden obsidian-glow">
-<div class="absolute -top-32 -left-32 w-64 h-64 bg-primary/20 blur-[100px] rounded-full"></div>
-<div class="absolute -bottom-32 -right-32 w-64 h-64 bg-secondary/10 blur-[100px] rounded-full"></div>
-<h2 class="font-headline text-4xl md:text-5xl font-extrabold mb-6">Join the future of HOA management.</h2>
-<p class="text-on-surface-variant text-lg mb-10 max-w-xl mx-auto">
-                    Built by a developer who was an HOA treasurer. He quit. Then he built this. Join the waitlist — we'll notify you when we launch.
-                </p>
-<div class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto bg-surface-container-lowest p-2 rounded-full border border-outline-variant/15">
-<form onsubmit="event.preventDefault();this.querySelector('button').textContent='You\'re on the list!';this.querySelector('input').disabled=true;this.querySelector('button').disabled=true" class="contents">
-<input class="flex-1 bg-transparent border-none focus:ring-0 px-6 py-3 text-on-surface placeholder:text-outline/60 rounded-full font-body" placeholder="Enter your email" type="email" required/>
-<button type="submit" class="bg-primary-container text-on-primary-container font-headline font-bold px-8 py-3 rounded-full luminous-button hover:scale-105 transition-all">
-                        Get Early Access
-                    </button>
-</form>
-</div>
-<p class="mt-6 text-xs text-outline font-medium uppercase tracking-widest">No credit card required</p>
-</div>
+
+<section class="quote-section">
+  <div class="container">
+    <div class="quote-inner">
+      <blockquote>"Built by a developer who was an HOA treasurer. He quit. Then he built this."</blockquote>
+      <cite>— The bot that manages your neighborhood</cite>
+    </div>
+  </div>
 </section>
-</main>
-<!-- Footer -->
-<footer class="w-full border-t border-[#464555]/15 bg-[#0f131d]">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-8 py-16 max-w-7xl mx-auto">
-<div class="space-y-6">
-<div class="text-lg font-bold text-[#dfe2f1] font-headline">HOABot</div>
-<p class="text-xs text-[#c7c4d8] font-inter leading-relaxed">
-                    The intelligence layer for your neighborhood community. Built for efficiency, transparency, and peace of mind.
-                </p>
-</div>
-<div>
-<h6 class="text-[#dfe2f1] font-bold mb-6 text-sm uppercase tracking-widest">Product</h6>
-<ul class="space-y-4 font-inter text-xs text-[#c7c4d8]">
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Features</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Integrations</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Pricing</a></li>
-</ul>
-</div>
-<div>
-<h6 class="text-[#dfe2f1] font-bold mb-6 text-sm uppercase tracking-widest">Resources</h6>
-<ul class="space-y-4 font-inter text-xs text-[#c7c4d8]">
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Documentation</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Community</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Support</a></li>
-</ul>
-</div>
-<div>
-<h6 class="text-[#dfe2f1] font-bold mb-6 text-sm uppercase tracking-widest">Legal</h6>
-<ul class="space-y-4 font-inter text-xs text-[#c7c4d8]">
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Privacy</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Terms</a></li>
-<li><a class="hover:text-[#51df9c] transition-colors" href="#">Security</a></li>
-</ul>
-</div>
-</div>
-<div class="max-w-7xl mx-auto px-8 pb-12">
-<div class="border-t border-[#464555]/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-<span class="text-xs text-[#c7c4d8] font-inter">© 2026 HOABot. All rights reserved.</span>
-<div class="flex gap-6 items-center">
-<a href="https://x.com/hoaboabot" target="_blank" class="text-xs text-[#c7c4d8] hover:text-[#51df9c] transition-colors font-medium">Follow @hoaboabot on X</a>
-</div>
-</div>
-</div>
+
+<section class="cta" id="waitlist">
+  <div class="container">
+    <h2>Ready to stop managing<br>your HOA with spreadsheets?</h2>
+    <p>Join the waitlist. We'll email you once when we launch. That's it.</p>
+    <form class="cta-form" onsubmit="event.preventDefault();this.querySelector('button').textContent='You\'re on the list';this.querySelector('input').disabled=true;this.querySelector('button').disabled=true">
+      <input type="email" placeholder="you@yourhoa.com" required>
+      <button type="submit">Get Early Access</button>
+    </form>
+    <p class="cta-note">No spam. No "weekly tips." Just one email when it's ready.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="nav-logo"><span>HOA</span>Bot</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#">Pricing <span class="soon-tag">Soon</span></a>
+      <a href="/app">App <span class="soon-tag">Soon</span></a>
+      <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
+    </div>
+    <div class="footer-copy">© 2026 HOABot</div>
+  </div>
 </footer>
-</body></html>
+
+</body>
+</html>

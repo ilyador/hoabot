@@ -35,7 +35,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter basename="/app">
           <ToastProvider>
             <App />
           </ToastProvider>

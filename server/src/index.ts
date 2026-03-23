@@ -252,15 +252,65 @@ app.get('/api/invoices/:id/pdf', async (req, res) => {
   }
 });
 
+// LinkedIn OAuth callback
+app.get('/api/linkedin/callback', async (req, res) => {
+  const code = req.query.code as string;
+  if (!code) { res.status(400).send('Missing code parameter'); return; }
+
+  try {
+    const tokenRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: process.env.LINKEDIN_REDIRECT_URI || 'http://192.168.1.192:4100/api/linkedin/callback',
+        client_id: process.env.LINKEDIN_CLIENT_ID || '',
+        client_secret: process.env.LINKEDIN_CLIENT_SECRET || '',
+      }),
+    });
+    const tokenData = await tokenRes.json() as any;
+    if (tokenData.error) { res.status(400).send(`OAuth error: ${tokenData.error_description}`); return; }
+
+    // Get user info
+    const meRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    const me = await meRes.json() as any;
+
+    // Save token to file for content pipeline
+    const tokenFile = path.join(process.cwd(), 'content/.linkedin-token.json');
+    const fs = await import('fs');
+    fs.writeFileSync(tokenFile, JSON.stringify({
+      access_token: tokenData.access_token,
+      expires_at: Date.now() + (tokenData.expires_in * 1000),
+      person_id: me.sub,
+      name: me.name,
+      email: me.email,
+    }, null, 2));
+
+    res.send(`<h2>LinkedIn connected!</h2><p>Authenticated as: ${me.name} (${me.email})</p><p>Token saved. You can close this window.</p>`);
+  } catch (err: any) {
+    console.error('LinkedIn callback error:', err);
+    res.status(500).send(`Error: ${err.message}`);
+  }
+});
+
 // tRPC
 app.use('/api/trpc', createExpressMiddleware({
   router: appRouter,
   createContext,
 }));
 
-// Serve static web app in production
-app.use(express.static(path.join(process.cwd(), 'web/dist')));
-app.get('/{*path}', (_req, res) => {
+// Serve landing page at root
+app.use('/landing', express.static(path.join(process.cwd(), 'landing')));
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(process.cwd(), 'landing/index.html'));
+});
+
+// Serve React app at /app
+app.use('/app', express.static(path.join(process.cwd(), 'web/dist')));
+app.get('/app/{*path}', (_req, res) => {
   res.sendFile(path.join(process.cwd(), 'web/dist', 'index.html'));
 });
 

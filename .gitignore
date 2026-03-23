@@ -5,3 +5,4 @@ uploads/
 *.log
 /tmp/
 content/images/*.png
+content/.linkedin-token.json

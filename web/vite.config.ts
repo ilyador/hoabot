@@ -10,8 +10,10 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': 'http://localhost:4100',
+      '/landing': 'http://localhost:4100',
     },
   },
+  base: '/app/',
   build: {
     outDir: 'dist',
   },

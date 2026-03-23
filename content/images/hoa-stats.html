@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 675px;
+    background: #0a0a0a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .card {
+    width: 1080px;
+    padding: 60px;
+  }
+  h1 {
+    font-size: 36px;
+    color: #9b72cf;
+    margin-bottom: 40px;
+    font-weight: 600;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .stat {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .stat .number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #9b72cf;
+  }
+  .stat .label {
+    font-size: 18px;
+    color: #888;
+    margin-top: 8px;
+  }
+  .footer {
+    margin-top: 40px;
+    font-size: 16px;
+    color: #555;
+  }
+  .footer span { color: #9b72cf; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>HOA by the numbers</h1>
+    <div class="stats">
+      <div class="stat">
+        <div class="number">370K+</div>
+        <div class="label">HOAs in the United States</div>
+      </div>
+      <div class="stat">
+        <div class="number">75M</div>
+        <div class="label">Americans living under HOA rules</div>
+      </div>
+      <div class="stat">
+        <div class="number">$250/mo</div>
+        <div class="label">Average HOA fee (up 19% since 2020)</div>
+      </div>
+      <div class="stat">
+        <div class="number">405K</div>
+        <div class="label">Members of r/fuckHOA</div>
+      </div>
+    </div>
+    <div class="footer">source: community associations institute, reddit &bull; <span>@hoaboabot</span></div>
+  </div>
+</body>
+</html>

@@ -20,8 +20,8 @@ export function LoginPage() {
       <div className="w-full max-w-[380px]">
         <div className="text-center mb-8">
           <div className="text-[32px] mb-1">🏘️</div>
-          <h1 className="text-[20px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Sign in to HOABot</h1>
-          <p className="text-[13px] mt-1" style={{ color: 'var(--text-secondary)' }}>Manage your community with ease</p>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px' }}>Sign in to HOABot</h1>
+          <p className="text-[13px] mt-1" style={{ color: 'var(--text-secondary)' }}>Your neighborhood, managed</p>
         </div>
 
         <div className="card p-5">

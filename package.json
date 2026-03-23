@@ -9,6 +9,7 @@
     "dev": "concurrently \"pnpm dev:server\" \"pnpm dev:web\"",
     "build:web": "vite build --config web/vite.config.ts",
     "start": "node dist/server/src/index.js",
+    "dev:landing": "npx serve landing -l tcp://0.0.0.0:4200",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "content": "tsx content/src/post.ts",

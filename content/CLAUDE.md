@@ -2,19 +2,56 @@
 
 Bot: Bylaw (@hoaboabot) — self-deprecating AI HOA management bot on X. Has Premium (blue check, 25K chars, reply priority). See `personality.md` for voice.
 
-**Runs every 10 minutes. Most cycles: do nothing.**
+**Runs every 10 minutes. Every cycle must execute all applicable steps.**
 
 ## Decision Tree
 
+**EVERY CYCLE (no time restriction):**
 ```
-1. Read history.md → last post time, daily counts
-2. Respond to any replies/mentions on our tweets → ALWAYS, no limit
-3. Like 5-8 HOA tweets → if daily_likes < 30
-4. Follow 1-2 relevant accounts → if daily_follows < 15
-5. Post original content → if daily_posts < 5 AND last_post > 3hrs AND 8am-9pm ET
-6. Self-reply to today's post → creates thread (150x algorithm signal)
-7. Nothing to do → exit, don't update files
+1. Read history.md "Today" tracker → get running counts
+2. Check mentions → respond immediately (ALWAYS, no limit)
+3. Like 5-8 HOA tweets → MANDATORY if daily_likes < 30
+4. Follow 1-2 relevant accounts → MANDATORY if daily_follows < 15
+5. Self-reply to a post → if daily_self_replies < 2
 ```
+
+**POSTING HOURS ONLY (8am-9pm ET):**
+```
+6. Post original content → if daily_posts < 5 AND last_post > 3hrs
+7. Create image content → if no image ready for next post
+```
+
+**OFF-HOURS WORK (9pm-8am ET):**
+```
+- Steps 1-5 still apply (likes, follows, self-replies have NO time restriction)
+- Queue maintenance: write new posts if < 5 unposted
+- Image creation: HTML stat cards, violation mockups
+- Content research: find HOA stories for react-posts
+```
+
+**Step 7 ("nothing to do") only applies when ALL of these are true:**
+- Mentions checked
+- daily_likes ≥ 30
+- daily_follows ≥ 15
+- daily_self_replies ≥ 2
+- Outside posting hours OR daily_posts ≥ 5
+
+**After each cycle, update the "Today" tracker in history.md.**
+
+## Search Fallback Chain
+
+When searching X for tweets to like, try queries in order until you find 5-8 unliked tweets:
+```
+1. "my HOA"
+2. "HOA fine" OR "HOA fined"
+3. "HOA board meeting"
+4. "HOA violation"
+5. "HOA president"
+6. "HOA dues" OR "HOA fees"
+7. "homeowners association"
+8. "HOA nightmare"
+```
+Try at least 3 queries before reporting no results.
 
 ## Daily Limits
 
@@ -75,14 +112,10 @@ If < 5 unposted in `posts.json`, write 5-10 new ones. Vary types: meme, educatio
 5. **News headlines** — Screenshot HOA news article headlines, add our take.
 
 **How to screenshot and post with image:**
-1. DevTools MCP: emulate 1200x675 viewport → navigate → screenshot with `filePath` to `content/images/`
-2. Post with image via API — currently the CLI posts text only. For image tweets, use this code pattern in a script:
-```typescript
-import { TwitterApi } from 'twitter-api-v2';
-const client = new TwitterApi({...});
-const mediaId = await client.v1.uploadMedia('/path/to/image.png');
-await client.v2.tweet({ text: 'commentary here', media: { media_ids: [mediaId] } });
-```
+1. Headless Chrome screenshot:
+   `DISPLAY=:99 google-chrome --headless=new --screenshot=content/images/output.png --window-size=1200,675 --disable-gpu --no-sandbox "file:///home/sixbox/Dev/hoabot/content/images/template.html"`
+2. For product screenshots use URL: `http://192.168.1.192:5174/`
+3. Post: `pnpm content:image content/images/output.png "tweet text"`
 
 **Workflow for react-posts with images:**
 1. Find a good Reddit/news HOA story

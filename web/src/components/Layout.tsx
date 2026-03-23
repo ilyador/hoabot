@@ -80,7 +80,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
-          <span className="text-[15px] font-semibold text-white tracking-tight">🏘️ HOABot</span>
+          <span style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '17px', color: '#fff', letterSpacing: '-0.01em' }}>🏘️ <span style={{ color: 'var(--accent)' }}>HOA</span>Bot</span>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white/80 text-lg">✕</button>
         </div>
 
@@ -88,7 +88,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
         <nav className="flex-1 py-3 px-2 overflow-y-auto">
           {navGroups.map((group, gi) => (
             <div key={gi} className={gi > 0 ? 'mt-5' : ''}>
-              <div className="px-2 mb-1 text-[11px] font-semibold uppercase tracking-[0.05em]" style={{ color: 'var(--text-tertiary)' }}>
+              <div className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono, monospace)' }}>
                 {group.label}
               </div>
               {group.items.map(item => {
@@ -152,7 +152,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
           style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}
         >
           <button onClick={() => setSidebarOpen(true)} className="text-base" style={{ color: 'var(--text-primary)' }}>☰</button>
-          <span className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>🏘️ HOABot</span>
+          <span style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '15px', color: 'var(--text-primary)' }}>🏘️ HOABot</span>
           <div className="w-6" />
         </header>
 
