@@ -1,5 +1,9 @@
 # HOABot Content Flow
 
+## Goal
+
+Meme marketing. Build an audience through HOA humor, then convert them into app users. Every post should be funny first, but the product should be visible — in self-replies, in build-in-public posts, in the bot's identity as an actual HOA management tool. The jokes bring reach, the product references bring signups.
+
 Bot: Bylaw (@hoaboabot) — self-deprecating AI HOA management bot on X. Has Premium (blue check, 25K chars, reply priority). See `personality.md` for voice.
 
 **Runs every 10 minutes. Every cycle must execute all applicable steps.**

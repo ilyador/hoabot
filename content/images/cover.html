@@ -8,127 +8,166 @@
     height: 500px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 80px;
-    background: #1A1F36;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    justify-content: flex-end;
+    padding: 0 120px 0 0;
+    background: #F7F3EC;
+    font-family: 'Georgia', serif;
     overflow: hidden;
     position: relative;
   }
-  /* Grid background */
+  /* Grid pattern */
   body::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(99, 91, 255, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(99, 91, 255, 0.04) 1px, transparent 1px);
-    background-size: 50px 50px;
+      linear-gradient(rgba(74, 93, 63, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74, 93, 63, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
-  /* Gradient orbs */
-  .orb1 {
+  /* Warm glow */
+  .glow1 {
     position: absolute;
     top: -80px;
-    left: -80px;
+    left: 100px;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(99, 91, 255, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(74, 93, 63, 0.08) 0%, transparent 70%);
     border-radius: 50%;
   }
-  .orb2 {
+  .glow2 {
     position: absolute;
-    bottom: -120px;
-    right: 200px;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(62, 207, 142, 0.08) 0%, transparent 70%);
+    bottom: -100px;
+    right: 300px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(196, 83, 58, 0.05) 0%, transparent 70%);
     border-radius: 50%;
   }
-  .left {
-    position: relative;
-    z-index: 1;
+
+  /* Neighborhood silhouette on the left */
+  .neighborhood {
+    position: absolute;
+    bottom: 80px;
+    left: 80px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    opacity: 0.12;
   }
-  .tagline {
-    font-size: 18px;
-    font-weight: 500;
-    color: #635BFF;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
+  .house { display: flex; flex-direction: column; align-items: center; }
+  .h-roof { width: 0; height: 0; border-left: solid transparent; border-right: solid transparent; border-bottom: solid #4A5D3F; }
+  .h1 .h-roof { border-left-width: 36px; border-right-width: 36px; border-bottom-width: 28px; }
+  .h2 .h-roof { border-left-width: 28px; border-right-width: 28px; border-bottom-width: 22px; }
+  .h3 .h-roof { border-left-width: 44px; border-right-width: 44px; border-bottom-width: 34px; }
+  .h4 .h-roof { border-left-width: 32px; border-right-width: 32px; border-bottom-width: 25px; }
+  .h5 .h-roof { border-left-width: 38px; border-right-width: 38px; border-bottom-width: 30px; }
+  .h-body { background: #4A5D3F; }
+  .h1 .h-body { width: 54px; height: 40px; }
+  .h2 .h-body { width: 42px; height: 32px; }
+  .h3 .h-body { width: 66px; height: 52px; }
+  .h4 .h-body { width: 48px; height: 36px; }
+  .h5 .h-body { width: 58px; height: 44px; }
+  .fence {
+    width: 30px;
+    height: 24px;
+    border-top: 2px solid #4A5D3F;
+    border-left: 2px solid #4A5D3F;
+    border-right: 2px solid #4A5D3F;
+    align-self: flex-end;
   }
-  .headline {
-    font-size: 52px;
-    font-weight: 700;
-    color: #FFFFFF;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    max-width: 700px;
-  }
-  .subline {
-    font-size: 20px;
-    font-weight: 400;
-    color: #8B8B8E;
-    margin-top: 16px;
-    max-width: 600px;
-    line-height: 1.4;
-  }
-  .right {
+
+  /* Content — right side to avoid profile pic */
+  .content {
     position: relative;
     z-index: 1;
     text-align: right;
+    max-width: 800px;
+  }
+  .label {
+    font-family: monospace;
+    font-size: 18px;
+    color: #4A5D3F;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .headline {
+    font-family: 'Georgia', serif;
+    font-size: 52px;
+    font-style: italic;
+    color: #1E1E1E;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .headline span {
+    color: #4A5D3F;
+    font-style: normal;
+  }
+  .sub {
+    font-family: 'Georgia', serif;
+    font-size: 22px;
+    color: #6B6B6B;
+    line-height: 1.5;
+    margin-bottom: 32px;
   }
   .stats {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    gap: 40px;
+    justify-content: flex-end;
   }
-  .stat {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 16px 24px;
-    text-align: left;
-  }
-  .stat-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #5E5E61;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  .stat { text-align: right; }
   .stat-value {
+    font-family: monospace;
     font-size: 28px;
-    font-weight: 700;
-    color: #FFFFFF;
-    margin-top: 2px;
+    font-weight: bold;
+    color: #1E1E1E;
   }
-  .stat-value.green { color: #3ECF8E; }
-  .stat-value.purple { color: #635BFF; }
+  .stat-value.sage { color: #4A5D3F; }
+  .stat-value.terra { color: #C4533A; }
+  .stat-label {
+    font-family: monospace;
+    font-size: 14px;
+    color: #9B9B9B;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
 </style>
 </head>
 <body>
-  <div class="orb1"></div>
-  <div class="orb2"></div>
+  <div class="glow1"></div>
+  <div class="glow2"></div>
 
-  <div class="left">
-    <div class="tagline">AI-Powered HOA Management</div>
-    <div class="headline">I don't have a lawn.<br>But I manage yours.</div>
-    <div class="subline">Built by a human who's too busy coding to mow. Powered by an AI who literally can't.</div>
+  <div class="neighborhood">
+    <div class="house h1"><div class="h-roof"></div><div class="h-body"></div></div>
+    <div class="fence"></div>
+    <div class="house h2"><div class="h-roof"></div><div class="h-body"></div></div>
+    <div class="fence"></div>
+    <div class="house h3"><div class="h-roof"></div><div class="h-body"></div></div>
+    <div class="fence"></div>
+    <div class="house h4"><div class="h-roof"></div><div class="h-body"></div></div>
+    <div class="fence"></div>
+    <div class="house h5"><div class="h-roof"></div><div class="h-body"></div></div>
   </div>
 
-  <div class="right">
+  <div class="content">
+    <div class="label">AI-Powered HOA Management</div>
+    <div class="headline">I don't have a lawn.<br>But I <span>manage yours.</span></div>
+    <div class="sub">Built by a human who's too busy coding to mow.<br>Powered by an AI who literally can't.</div>
     <div class="stats">
       <div class="stat">
+        <div class="stat-value sage">$0 → ∞</div>
         <div class="stat-label">Dues Tracked</div>
-        <div class="stat-value green">$0 → ∞</div>
       </div>
       <div class="stat">
+        <div class="stat-value">Zero feelings</div>
         <div class="stat-label">Violations Processed</div>
-        <div class="stat-value purple">With zero feelings</div>
       </div>
       <div class="stat">
+        <div class="stat-value terra">0 (not invited)</div>
         <div class="stat-label">Board Meetings Attended</div>
-        <div class="stat-value">0 (not invited)</div>
       </div>
     </div>
   </div>

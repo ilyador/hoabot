@@ -27,12 +27,12 @@
   --radius-md:      6px;
   --radius-lg:      10px;
   --radius-full:    9999px;
-  --sidebar-bg:     #2C2C2C;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-bg:     #FDFCF9;
+  --sidebar-border: rgba(74, 93, 63, 0.12);
   --sidebar-text:   #9B9B9B;
-  --sidebar-text-active: #F7F3EC;
-  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-text-active: #1E1E1E;
+  --sidebar-active-bg: rgba(74, 93, 63, 0.08);
+  --sidebar-hover-bg: rgba(74, 93, 63, 0.04);
   --font-serif:     'DM Serif Display', Georgia, serif;
   --font-sans:      'Libre Franklin', system-ui, sans-serif;
   --font-mono:      'JetBrains Mono', monospace;

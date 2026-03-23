@@ -70,7 +70,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static z-40 h-screen w-[240px] flex flex-col transition-transform duration-200 ${
+        className={`fixed z-40 top-0 bottom-0 w-[240px] flex flex-col transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
         style={{
@@ -80,8 +80,8 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
-          <span style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '17px', color: '#fff', letterSpacing: '-0.01em' }}>🏘️ <span style={{ color: 'var(--accent)' }}>HOA</span>Bot</span>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white/80 text-lg">✕</button>
+          <span style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '17px', color: 'var(--sidebar-text-active)', letterSpacing: '-0.01em' }}>🏘️ <span style={{ color: 'var(--accent)' }}>HOA</span>Bot</span>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-lg" style={{ color: 'var(--sidebar-text)' }}>✕</button>
         </div>
 
         {/* Nav */}
@@ -118,24 +118,24 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
 
         {/* User */}
         <div className="px-3 py-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
-          <div className="text-[13px] font-medium text-white/90">{user.name}</div>
+          <div className="text-[13px] font-medium" style={{ color: 'var(--sidebar-text-active)' }}>{user.name}</div>
           <div className="text-[11px] mt-0.5" style={{ color: 'var(--sidebar-text)' }}>{user.email}</div>
           <div className="flex gap-1.5 mt-2">
             <button
               onClick={() => logout.mutate()}
               className="flex-1 text-[12px] py-1.5 px-2 rounded-[5px] transition-all duration-100"
-              style={{ color: 'var(--sidebar-text)', background: 'rgba(255,255,255,0.05)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+              style={{ color: 'var(--sidebar-text)', background: 'var(--sidebar-active-bg)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--sidebar-hover-bg)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'var(--sidebar-active-bg)')}
             >
               Sign Out
             </button>
             <button
               onClick={toggleDarkMode}
               className="text-[12px] py-1.5 px-2 rounded-[5px] transition-all duration-100"
-              style={{ color: 'var(--sidebar-text)', background: 'rgba(255,255,255,0.05)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+              style={{ color: 'var(--sidebar-text)', background: 'var(--sidebar-active-bg)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--sidebar-hover-bg)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'var(--sidebar-active-bg)')}
               title={darkMode ? 'Light mode' : 'Dark mode'}
             >
               {darkMode ? '☀️' : '🌙'}
@@ -145,7 +145,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen md:ml-[240px]">
         {/* Mobile header */}
         <header
           className="md:hidden flex items-center justify-between px-4 h-12"

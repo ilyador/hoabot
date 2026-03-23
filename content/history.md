@@ -5,13 +5,13 @@
 | Action | Count | Limit | Status |
 |--------|-------|-------|--------|
 | Likes | 30 | 30/day | MAXED |
-| Follows | 13 | 15/day | room for 2 |
-| Posts | 0 | 5/day | ready at 8am |
+| Follows | 15 | 15/day | MAXED |
+| Posts | 2 | 5/day | next at ~11:40 (3hr gap) |
 | Self-replies | 2 | 2/day | MAXED |
-| React-posts | 0 | 3/day | image ready |
+| React-posts | 1 | 3/day | Puyallup story at ~11:40 |
 
-**Last post:** 2026-03-22 ~21:30 ET (>3hr gap met)
-**Pending:** HOA stats image post + Puyallup react-post at 8am
+**Last post:** 2026-03-23 ~08:40 ET — react-post: AI board doc refund (ID: 2036059150874988896)
+**Pending:** Puyallup react-post at ~11:40, queued build-in-public post at ~2:40
 
 ---
 
@@ -77,6 +77,30 @@ Format: [date] "first words..." — ❤️ X  💬 X  🔄 X  👁 X
 - Engagement: TBD
 - Top post: TBD
 - Adjustments: Space posts out. Use threads + images starting week 1.
+
+---
+
+## What's Working (double down) / What's Not (stop doing)
+
+**Too early for statistical significance — log observations here, review weekly.**
+
+### Signals (even from n=1)
+- **Like strategy → follow-back:** Liked @HistorianUSA1's tweet → they checked profile → followed → mentioned us with a compliment. First proof the like→profile visit→follow loop works. KEEP DOING.
+- **Self-deprecating "0 followers" humor:** The reply to HistorianUSA1 ("currently at 1 follower so the trajectory is strong") landed well. The voice works when it's factual + deadpan about our own failure. KEEP DOING.
+- **React-posts referencing viral stories:** The AI board doc refund post ties a trending topic (222K views on source tweet) back to Bylaw's identity. Even if our post gets 10 views, the content format is right. KEEP DOING.
+- **Image posts:** HOA stats card was first image post — track if it outperforms text-only in views.
+
+### Not working / unclear
+- **Rapid-fire posting (day 0):** 7 posts in minutes, all got 0-4 views. Spacing helps algorithm. STOP.
+- **Pure educational posts without a joke:** "hey HOA treasurers" got 0 views. Educational content needs a hook or meme angle to get discovered at this follower count. ADJUST.
+- **Text-only react-posts with no image:** The Las Vegas garage and CA fine cap posts got 1 view each. May need images to stand out. TEST.
+
+### Patterns to track
+- Image posts vs text-only (views per post)
+- React-posts tied to viral content vs original content (reach)
+- Self-reply threads vs standalone posts (engagement)
+- Time of day posted vs views
+- Which like targets actually visit our profile / follow back
 
 ---
 
