@@ -280,7 +280,6 @@ app.get('/api/linkedin/callback', async (req, res) => {
 
     // Save token to file for content pipeline
     const tokenFile = path.join(process.cwd(), 'content/.linkedin-token.json');
-    const fs = await import('fs');
     fs.writeFileSync(tokenFile, JSON.stringify({
       access_token: tokenData.access_token,
       expires_at: Date.now() + (tokenData.expires_in * 1000),
