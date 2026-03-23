@@ -36,6 +36,7 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
       connectSrc: ["'self'", "https://maps.googleapis.com"],
       frameSrc: ["'none'"],
+      upgradeInsecureRequests: isProduction ? [] : null,
     },
   },
 }));

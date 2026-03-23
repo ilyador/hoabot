@@ -67,7 +67,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
   }, [sidebarOpen]);
 
   const logout = trpc.auth.logout.useMutation({
-    onSuccess: () => { queryClient.clear(); navigate('/login'); },
+    onSuccess: () => { queryClient.clear(); window.location.href = '/app/login'; },
   });
 
   return (
