@@ -26,7 +26,7 @@ export const authRouter = router({
     .mutation(async ({ input, ctx }) => {
       const existing = await prisma.user.findUnique({ where: { email: input.email } });
       if (existing) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Registration failed' });
+        throw new TRPCError({ code: 'CONFLICT', message: 'An account with this email already exists' });
       }
 
       const passwordHash = await hashPassword(input.password);

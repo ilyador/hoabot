@@ -8,6 +8,7 @@ export function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -33,7 +34,13 @@ export function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); setError(''); register.mutate({ name, email, password }); }}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            setError('');
+            if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
+            if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+            register.mutate({ name, email, password });
+          }}>
             <FormField
               label="Name"
               value={name}
@@ -58,11 +65,22 @@ export function RegisterPage() {
               type="password"
               value={password}
               onChange={setPassword}
-              placeholder="Min 6 characters"
+              placeholder="Min 8 characters"
+              required
+              disabled={register.isPending}
+              className="mb-3"
+              validate={(v) => v.length > 0 && v.length < 8 ? 'Password must be at least 8 characters' : null}
+            />
+            <FormField
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder="Repeat your password"
               required
               disabled={register.isPending}
               className="mb-5"
-              validate={(v) => v.length > 0 && v.length < 6 ? 'Password must be at least 6 characters' : null}
+              validate={(v) => v.length > 0 && password.length > 0 && v !== password ? 'Passwords do not match' : null}
             />
             <button type="submit" disabled={register.isPending} className="btn btn-primary w-full">
               {register.isPending ? 'Creating account...' : 'Create Account'}
