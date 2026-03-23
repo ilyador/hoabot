@@ -9,6 +9,7 @@
 | Posts | 3 | 5/day | next at ~14:30 (3hr gap) |
 | Self-replies | 2 | 2/day | MAXED |
 | React-posts | 2 | 3/day | room for 1 more |
+| Replies written | 10 | 10/day | MAXED (5 posted, 5 in queue) |
 
 **Last post:** 2026-03-23 ~11:30 ET — react-post: Puyallup HOA arrest (ID: 2036103508085109116)
 **Pending:** queued build-in-public post at ~14:30

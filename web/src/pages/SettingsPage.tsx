@@ -23,6 +23,22 @@ export function SettingsPage() {
     if (hoa) setHoaForm({ name: hoa.name, address: hoa.address || '', phone: hoa.phone || '', email: hoa.email || '' });
   }, [hoa]);
 
+  // Phone auto-format: strip non-digits, format as (555) 123-4567
+  function handlePhoneChange(raw: string) {
+    const digits = raw.replace(/\D/g, '').slice(0, 10);
+    let formatted = '';
+    if (digits.length > 0) formatted = '(' + digits.slice(0, 3);
+    if (digits.length >= 3) formatted += ') ' + digits.slice(3, 6);
+    if (digits.length >= 6) formatted += '-' + digits.slice(6);
+    setHoaForm({ ...hoaForm, phone: formatted });
+  }
+
+  // Field validation (on blur)
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const errors: Record<string, string> = {};
+  if (touched.phone && hoaForm.phone && hoaForm.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a 10-digit phone number';
+  if (touched.email && hoaForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hoaForm.email)) errors.email = 'Enter a valid email address';
+
   // Late fee form
   const [feeForm, setFeeForm] = useState({
     lateFeeEnabled: false,
@@ -77,11 +93,13 @@ export function SettingsPage() {
           </div>
           <div>
             <label className="label">Phone</label>
-            <input type="tel" value={hoaForm.phone} onChange={e => setHoaForm({ ...hoaForm, phone: e.target.value })} className="input" placeholder="(555) 123-4567" pattern="[\d\s\+\-\(\)]{7,20}" title="Enter a valid phone number" />
+            <input type="tel" value={hoaForm.phone} onChange={e => handlePhoneChange(e.target.value)} onBlur={() => setTouched(t => ({ ...t, phone: true }))} className="input" placeholder="(555) 123-4567" style={errors.phone ? { borderColor: 'var(--error)' } : {}} />
+            {errors.phone && <div className="text-[11px] mt-1" style={{ color: 'var(--error)' }}>{errors.phone}</div>}
           </div>
           <div>
             <label className="label">Contact Email</label>
-            <input type="email" value={hoaForm.email} onChange={e => setHoaForm({ ...hoaForm, email: e.target.value })} className="input" placeholder="board@yourhoa.com" />
+            <input type="email" value={hoaForm.email} onChange={e => setHoaForm({ ...hoaForm, email: e.target.value })} onBlur={() => setTouched(t => ({ ...t, email: true }))} className="input" placeholder="board@yourhoa.com" style={errors.email ? { borderColor: 'var(--error)' } : {}} />
+            {errors.email && <div className="text-[11px] mt-1" style={{ color: 'var(--error)' }}>{errors.email}</div>}
           </div>
           <div className="md:col-span-2">
             <button type="submit" disabled={updateHoa.isPending} className="btn btn-primary">

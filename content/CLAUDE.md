@@ -13,10 +13,11 @@ Bot: Bylaw (@hoaboabot) — self-deprecating AI HOA management bot on X. Has Pre
 **EVERY CYCLE (no time restriction):**
 ```
 1. Read history.md "Today" tracker → get running counts
-2. Check mentions → respond immediately (ALWAYS, no limit)
+2. Check mentions → respond immediately via API (ALWAYS, no limit)
 3. Like 5-8 HOA tweets → MANDATORY if daily_likes < 30
 4. Follow 1-2 relevant accounts → MANDATORY if daily_follows < 15
 5. Self-reply to a post → if daily_self_replies < 2
+6. Write 3-5 replies for creator to paste → MANDATORY if daily_replies_written < 10
 ```
 
 **POSTING HOURS ONLY (8am-9pm ET):**
@@ -33,11 +34,12 @@ Bot: Bylaw (@hoaboabot) — self-deprecating AI HOA management bot on X. Has Pre
 - Content research: find HOA stories for react-posts
 ```
 
-**Step 7 ("nothing to do") only applies when ALL of these are true:**
+**"Nothing to do" only applies when ALL of these are true:**
 - Mentions checked
 - daily_likes ≥ 30
 - daily_follows ≥ 15
 - daily_self_replies ≥ 2
+- daily_replies_written ≥ 10
 - Outside posting hours OR daily_posts ≥ 5
 
 **After each cycle, update the "Today" tracker in history.md.**
@@ -66,6 +68,7 @@ Try at least 3 queries before reporting no results.
 | Self-replies | 2/day | 1 |
 | Follows | 15/day | 1-2 |
 | React-posts | 3/day | — |
+| Replies written (manual) | 10/day | 3-5 |
 
 Post Tue-Thu 9-11am ET for best reach. Weekends: max 2 posts.
 
@@ -75,9 +78,21 @@ Web search: `site:x.com "my HOA" OR "HOA fine" OR "HOA board"` with recent dates
 
 ## How To Engage
 
-**API limitation:** Replies and quotes to others' tweets return 403 (pay-per-use bug). Replying to OUR tweets works.
+**API limitation:** X restricts all programmatic replies (Feb 2026 policy). API replies only work if the original author @mentioned us first. This affects ALL tiers except Enterprise. Not a bug — deliberate anti-spam policy.
 
-**Workaround — react-posts:** Write original tweets referencing stories we find. Don't @-mention the source. This gets better algorithmic reach than replies anyway.
+**What works via API:**
+- Posting original tweets (including react-posts)
+- Self-replies to our own tweets
+- Replying to tweets that @mention @hoaboabot
+- Likes, follows
+
+**What requires manual posting by creator:**
+- Replies to other people's tweets (viral threads, HOA conversations)
+- Quote tweets
+
+**Replies queue:** Each cycle, find 3-5 high-value tweets worth replying to (viral HOA content, trending conversations, big accounts). Write ready-to-paste replies in `content/replies-queue.md`. Creator pastes them manually. This is our highest-leverage engagement — replies on viral tweets get seen by thousands.
+
+**React-posts (API):** Write original tweets referencing stories we find. Don't @-mention the source. Good algorithmic reach as standalone posts.
 
 **Likes:** Like HOA tweets from small accounts (500-5K followers). They check who liked, visit our profile. Best conversion from low effort.
 
@@ -186,5 +201,6 @@ pnpm content:follow <user>   # Follow account
 - `content/personality.md` — Voice guide
 - `content/history.md` — Post log, engagement, ideas
 - `content/posts.json` — Tweet queue
+- `content/replies-queue.md` — Manual replies for creator to paste
 - `content/images/` — Generated images
 - `content/src/` — CLI source code
