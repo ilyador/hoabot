@@ -27,6 +27,78 @@
   --serif: 'DM Serif Display', Georgia, serif;
   --sans: 'Libre Franklin', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
+  --nav-bg: #F7F3EC;
+  --features-bg: #1E1E1E;
+  --features-text: #F7F3EC;
+  --features-card-bg: #1E1E1E;
+  --features-card-hover: #3A3A3A;
+  --features-card-border: rgba(255,255,255,0.06);
+  --features-card-p: rgba(247, 243, 236, 0.55);
+  --cta-btn-bg: #1E1E1E;
+  --cta-btn-color: #F7F3EC;
+  --cta-btn-hover: #000;
+  --footer-bg: #1E1E1E;
+}
+
+/* Dark mode — the gazette by lamplight */
+[data-theme="dark"] {
+  --sage: #8BA07E;
+  --sage-light: #A3BF96;
+  --sage-muted: #6B8A5E;
+  --cream: #1A1A18;
+  --cream-dark: #252523;
+  --warm-white: #222220;
+  --charcoal: #F7F3EC;
+  --charcoal-light: #E8E4DB;
+  --terra: #E8826D;
+  --terra-light: #C4533A;
+  --terra-muted: rgba(232, 130, 109, 0.12);
+  --text: #F0ECE4;
+  --text-light: #A09A8E;
+  --text-faint: #6B665C;
+  --rule: rgba(247, 243, 236, 0.1);
+  --nav-bg: #1A1A18;
+  --features-bg: #121210;
+  --features-text: #F0ECE4;
+  --features-card-bg: #121210;
+  --features-card-hover: #1E1E1C;
+  --features-card-border: rgba(247, 243, 236, 0.06);
+  --features-card-p: rgba(247, 243, 236, 0.45);
+  --cta-btn-bg: #F7F3EC;
+  --cta-btn-color: #1A1A18;
+  --cta-btn-hover: #fff;
+  --footer-bg: #121210;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sage: #8BA07E;
+    --sage-light: #A3BF96;
+    --sage-muted: #6B8A5E;
+    --cream: #1A1A18;
+    --cream-dark: #252523;
+    --warm-white: #222220;
+    --charcoal: #F7F3EC;
+    --charcoal-light: #E8E4DB;
+    --terra: #E8826D;
+    --terra-light: #C4533A;
+    --terra-muted: rgba(232, 130, 109, 0.12);
+    --text: #F0ECE4;
+    --text-light: #A09A8E;
+    --text-faint: #6B665C;
+    --rule: rgba(247, 243, 236, 0.1);
+    --nav-bg: #1A1A18;
+    --features-bg: #121210;
+    --features-text: #F0ECE4;
+    --features-card-bg: #121210;
+    --features-card-hover: #1E1E1C;
+    --features-card-border: rgba(247, 243, 236, 0.06);
+    --features-card-p: rgba(247, 243, 236, 0.45);
+    --cta-btn-bg: #F7F3EC;
+    --cta-btn-color: #1A1A18;
+    --cta-btn-hover: #fff;
+    --footer-bg: #121210;
+  }
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +134,7 @@ nav {
   top: 0;
   left: 0;
   right: 0;
-  background: #F7F3EC;
+  background: var(--nav-bg);
   z-index: 200;
 }
 nav .container {
@@ -179,10 +251,13 @@ nav .container {
   border-radius: 2px;
   padding: 40px;
   position: relative;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
   transform: rotate(1.2deg);
   transition: transform 0.3s ease;
 }
+[data-theme="dark"] .artifact { box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4); }
+[data-theme="dark"] .grain { opacity: 0.4; }
+[data-theme="dark"] .btn-cta:hover { background: var(--sage-muted); border-color: var(--sage-muted); }
 .artifact:hover { transform: rotate(0deg); }
 .artifact::before {
   content: 'SAMPLE';
@@ -286,7 +361,7 @@ nav .container {
 .pain-number {
   font-family: var(--serif);
   font-size: 48px;
-  color: var(--cream-dark);
+  color: var(--rule);
   line-height: 1;
   margin-bottom: 16px;
 }
@@ -306,8 +381,8 @@ nav .container {
 /* === FEATURES === */
 .features {
   padding: 80px 0;
-  background: var(--charcoal);
-  color: var(--cream);
+  background: var(--features-bg);
+  color: var(--features-text);
 }
 .features .section-label { color: var(--sage-light); }
 .features-header {
@@ -321,7 +396,7 @@ nav .container {
   font-family: var(--serif);
   font-size: 40px;
   letter-spacing: -0.02em;
-  color: var(--cream);
+  color: var(--features-text);
   line-height: 1.15;
 }
 .features-header p {
@@ -334,15 +409,15 @@ nav .container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: rgba(255,255,255,0.06);
+  background: var(--features-card-border);
 }
 .feature-card {
-  background: var(--charcoal);
+  background: var(--features-card-bg);
   padding: 36px 28px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--features-card-border);
   transition: background 0.2s;
 }
-.feature-card:hover { background: var(--charcoal-light); }
+.feature-card:hover { background: var(--features-card-hover); }
 .feature-icon {
   font-size: 28px;
   margin-bottom: 20px;
@@ -351,14 +426,14 @@ nav .container {
 .feature-card h3 {
   font-family: var(--serif);
   font-size: 19px;
-  color: var(--cream);
+  color: var(--features-text);
   margin-bottom: 10px;
   line-height: 1.3;
 }
 .feature-card p {
   font-size: 13px;
   line-height: 1.65;
-  color: rgba(247, 243, 236, 0.55);
+  color: var(--features-card-p);
 }
 
 /* === HOW === */
@@ -503,9 +578,9 @@ nav .container {
 .cta-form input:focus { border-color: rgba(255,255,255,0.5); }
 .cta-form button {
   padding: 14px 28px;
-  background: var(--charcoal);
-  color: var(--cream);
-  border: 2px solid var(--charcoal);
+  background: var(--cta-btn-bg);
+  color: var(--cta-btn-color);
+  border: 2px solid var(--cta-btn-bg);
   border-radius: 0 4px 4px 0;
   font-family: var(--sans);
   font-size: 13px;
@@ -515,7 +590,7 @@ nav .container {
   white-space: nowrap;
   transition: all 0.2s;
 }
-.cta-form button:hover { background: #000; border-color: #000; }
+.cta-form button:hover { background: var(--cta-btn-hover); border-color: var(--cta-btn-hover); }
 .cta-note {
   font-family: var(--mono);
   font-size: 11px;
@@ -527,7 +602,7 @@ nav .container {
 /* === FOOTER === */
 footer {
   padding: 40px 0;
-  background: var(--charcoal);
+  background: var(--footer-bg);
   color: rgba(247,243,236,0.4);
   font-size: 13px;
 }
@@ -544,6 +619,21 @@ footer .nav-logo span { color: var(--sage-light); }
 .footer-links a { color: rgba(247,243,236,0.4); font-size: 12px; text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: var(--cream); }
 .footer-copy { font-size: 12px; }
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 14px;
+  line-height: 1;
+  transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.theme-toggle:hover { border-color: var(--sage); }
+
 .soon-tag {
   display: inline-block;
   padding: 2px 7px;
@@ -600,6 +690,7 @@ footer .nav-logo span { color: var(--sage-light); }
       <a href="#how">How it works</a>
       <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
       <a href="#waitlist" class="btn-cta">Get Early Access</a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"><span id="theme-icon">🌙</span></button>
     </div>
   </div>
 </nav>
@@ -784,5 +875,24 @@ footer .nav-logo span { color: var(--sage-light); }
   </div>
 </footer>
 
+<script>
+function getTheme() {
+  var saved = localStorage.getItem('hoabot-landing-theme');
+  if (saved) return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  var icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme') || getTheme();
+  var next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('hoabot-landing-theme', next);
+  applyTheme(next);
+}
+applyTheme(getTheme());
+</script>
 </body>
 </html>
