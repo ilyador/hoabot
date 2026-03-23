@@ -310,7 +310,8 @@ app.post('/api/waitlist', async (req, res) => {
       update: {},
     });
     res.json({ success: true, message: "You'll hear from us when the app is launched." });
-  } catch (err) {
+  } catch (err: any) {
+    console.error('Waitlist error:', err.message);
     res.status(500).json({ error: 'Something went wrong' });
   }
 });

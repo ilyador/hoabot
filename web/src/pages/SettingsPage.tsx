@@ -77,7 +77,7 @@ export function SettingsPage() {
           </div>
           <div>
             <label className="label">Phone</label>
-            <input type="text" value={hoaForm.phone} onChange={e => setHoaForm({ ...hoaForm, phone: e.target.value })} className="input" placeholder="(555) 123-4567" />
+            <input type="tel" value={hoaForm.phone} onChange={e => setHoaForm({ ...hoaForm, phone: e.target.value })} className="input" placeholder="(555) 123-4567" pattern="[\d\s\+\-\(\)]{7,20}" title="Enter a valid phone number" />
           </div>
           <div>
             <label className="label">Contact Email</label>

@@ -6,12 +6,12 @@
 |--------|-------|-------|--------|
 | Likes | 30 | 30/day | MAXED |
 | Follows | 15 | 15/day | MAXED |
-| Posts | 2 | 5/day | next at ~11:40 (3hr gap) |
+| Posts | 3 | 5/day | next at ~14:30 (3hr gap) |
 | Self-replies | 2 | 2/day | MAXED |
-| React-posts | 1 | 3/day | Puyallup story at ~11:40 |
+| React-posts | 2 | 3/day | room for 1 more |
 
-**Last post:** 2026-03-23 ~08:40 ET — react-post: AI board doc refund (ID: 2036059150874988896)
-**Pending:** Puyallup react-post at ~11:40, queued build-in-public post at ~2:40
+**Last post:** 2026-03-23 ~11:30 ET — react-post: Puyallup HOA arrest (ID: 2036103508085109116)
+**Pending:** queued build-in-public post at ~14:30
 
 ---
 
