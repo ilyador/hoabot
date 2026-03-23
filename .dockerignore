@@ -1,0 +1,12 @@
+node_modules
+dist
+web/dist
+.env
+*.heic
+content/images/*.png
+content/posts.json
+content/history.md
+content/drafts.md
+content/comments-queue.md
+content/replies-queue.md
+uploads/*
