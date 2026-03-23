@@ -29,10 +29,10 @@
   --radius-full:    9999px;
   --sidebar-bg:     #FDFCF9;
   --sidebar-border: rgba(74, 93, 63, 0.12);
-  --sidebar-text:   #9B9B9B;
+  --sidebar-text:   #6B6B6B;
   --sidebar-text-active: #1E1E1E;
-  --sidebar-active-bg: rgba(74, 93, 63, 0.08);
-  --sidebar-hover-bg: rgba(74, 93, 63, 0.04);
+  --sidebar-active-bg: rgba(74, 93, 63, 0.1);
+  --sidebar-hover-bg: rgba(74, 93, 63, 0.06);
   --font-serif:     'DM Serif Display', Georgia, serif;
   --font-sans:      'Libre Franklin', system-ui, sans-serif;
   --font-mono:      'JetBrains Mono', monospace;
@@ -62,6 +62,10 @@
   --info-muted:     rgba(123, 163, 204, 0.12);
   --sidebar-bg:     #151514;
   --sidebar-border: rgba(247, 243, 236, 0.06);
+  --sidebar-text:   #B5AFA5;
+  --sidebar-text-active: #F7F3EC;
+  --sidebar-active-bg: rgba(247, 243, 236, 0.1);
+  --sidebar-hover-bg: rgba(247, 243, 236, 0.06);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

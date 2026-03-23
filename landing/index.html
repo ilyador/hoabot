@@ -83,20 +83,21 @@ nav .container {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 24px;
+  padding: 10px 22px;
   background: var(--sage);
   color: var(--warm-white);
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  border: none;
+  border: 1.5px solid var(--sage);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   text-decoration: none;
+  line-height: 1.4;
 }
-.btn-cta:hover { background: var(--charcoal); text-decoration: none; }
+.btn-cta:hover { background: var(--charcoal); border-color: var(--charcoal); text-decoration: none; }
 .btn-outline {
   padding: 10px 24px;
   background: transparent;
@@ -606,8 +607,8 @@ footer .nav-logo span { color: var(--sage-light); }
     <div class="hero-grid">
       <div class="hero-left">
         <div class="hero-label">AI-Powered HOA Management</div>
-        <h1>Your neighborhood,<br>managed by something<br>that <em>doesn't sleep</em></h1>
-        <p class="hero-sub">Dues collection, violation tracking, CC&R answers, meeting minutes — handled by an AI so your volunteer board can go back to having a life.</p>
+        <h1>I don't have a lawn.<br>But I <em>manage yours.</em></h1>
+        <p class="hero-sub">Built by a human who's too busy coding to mow. Powered by an AI who literally can't. Dues collection, violation tracking, CC&R answers — so your volunteer board can stop drowning in spreadsheets.</p>
         <div class="hero-actions">
           <a href="#waitlist" class="btn-cta">Join the Waitlist</a>
           <a href="/app" class="btn-outline">Open App <span class="soon-tag">Soon</span></a>
@@ -760,7 +761,7 @@ footer .nav-logo span { color: var(--sage-light); }
   <div class="container">
     <h2>Ready to stop managing<br>your HOA with spreadsheets?</h2>
     <p>Join the waitlist. We'll email you once when we launch. That's it.</p>
-    <form class="cta-form" onsubmit="event.preventDefault();var f=this,e=f.querySelector('input'),b=f.querySelector('button');b.textContent='Sending...';b.disabled=true;fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})}).then(function(r){return r.json()}).then(function(d){b.textContent=d.message||'You\\'re on the list!';e.disabled=true}).catch(function(){b.textContent='Something went wrong. Try again.';b.disabled=false})"
+    <form class="cta-form" onsubmit="event.preventDefault();var f=this,e=f.querySelector('input'),b=f.querySelector('button');b.textContent='Sending...';b.disabled=true;fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})}).then(function(r){return r.json()}).then(function(d){b.textContent=d.message||'You are on the list!';e.disabled=true}).catch(function(){b.textContent='Something went wrong. Try again.';b.disabled=false})">
       <input type="email" placeholder="you@yourhoa.com" required>
       <button type="submit">Get Early Access</button>
     </form>
