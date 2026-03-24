@@ -23,6 +23,84 @@ const statusLabels: Record<string, string> = {
   escalated: 'Escalated',
 };
 
+function RuleCitation({ violation }: { violation: any }) {
+  const utils = trpc.useUtils();
+  const { toast } = useToast();
+  const [suggestions, setSuggestions] = useState<{ content: string; section: string | null; score: number }[] | null>(null);
+
+  const suggest = trpc.violations.suggestRule.useMutation({
+    onSuccess: (data) => setSuggestions(data.suggestions),
+    onError: (err) => toast(err.message, 'error'),
+  });
+  const saveRule = trpc.violations.saveRule.useMutation({
+    onSuccess: () => {
+      utils.violations.list.invalidate();
+      setSuggestions(null);
+      toast('Rule citation saved');
+    },
+    onError: (err) => toast(err.message, 'error'),
+  });
+
+  if (violation.ruleCitation) {
+    return (
+      <div className="mt-3 p-3 rounded-[6px]" style={{ borderLeft: '3px solid var(--accent)', background: 'var(--accent-muted)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold uppercase" style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em' }}>Cited Rule</span>
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{ fontSize: '11px', padding: '2px 6px' }}
+            onClick={() => saveRule.mutate({ violationId: violation.id, ruleCitation: '' })}
+          >
+            Clear
+          </button>
+        </div>
+        <p className="text-[13px]" style={{ color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>{violation.ruleCitation}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      {suggestions === null ? (
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => suggest.mutate({ violationId: violation.id })}
+          disabled={suggest.isPending}
+        >
+          {suggest.isPending ? 'Searching rules...' : 'Find Related Rule'}
+        </button>
+      ) : suggestions.length === 0 ? (
+        <div className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+          No matching rules found in your documents.
+          <button className="btn btn-ghost btn-sm ml-2" style={{ fontSize: '11px' }} onClick={() => setSuggestions(null)}>Dismiss</button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase" style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em' }}>
+            Suggested Rules
+          </div>
+          {suggestions.map((s, i) => (
+            <div key={i} className="p-3 rounded-[6px]" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+              {s.section && <div className="text-[12px] font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{s.section}</div>}
+              <p className="text-[12px]" style={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                {s.content.length > 300 ? s.content.slice(0, 300) + '...' : s.content}
+              </p>
+              <button
+                className="btn btn-primary btn-sm mt-2"
+                onClick={() => saveRule.mutate({ violationId: violation.id, ruleCitation: s.section ? `[${s.section}] ${s.content}` : s.content })}
+                disabled={saveRule.isPending}
+              >
+                Use This Rule
+              </button>
+            </div>
+          ))}
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: '11px' }} onClick={() => setSuggestions(null)}>Dismiss</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ViolationsPage() {
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -156,6 +234,8 @@ export function ViolationsPage() {
                   <p className="text-[13px]" style={{ color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>{v.ownerResponse}</p>
                 </div>
               )}
+
+              <RuleCitation violation={v} />
 
               <div className="flex gap-2 mt-3">
                 {v.status !== 'resolved' && (

@@ -214,6 +214,7 @@ model Violation {
   status          ViolationStatus @default(reported)
   cureByDate      DateTime?
   fineAmount      Int?
+  ruleCitation    String?         // AI-suggested CC&R rule text, confirmed by admin
   ownerResponse   String?         // homeowner's dispute/response text
   respondedAt     DateTime?
   createdAt       DateTime        @default(now())

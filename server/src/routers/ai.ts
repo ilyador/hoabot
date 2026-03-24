@@ -57,6 +57,7 @@ export const aiRouter = router({
           cureByDate: violation.cureByDate?.toISOString().split('T')[0] || undefined,
           fineAmount: violation.fineAmount || undefined,
           hoaName: violation.hoa.name,
+          ruleCitation: violation.ruleCitation || undefined,
         });
         return { notice };
       } catch (err: any) {

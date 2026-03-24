@@ -122,7 +122,7 @@ export async function indexDocument(documentId: string, hoaId: string, filePath:
 
 // --- Search chunks ---
 
-async function searchChunks(hoaId: string, query: string, topK = 5): Promise<{ content: string; section: string | null; score: number }[]> {
+export async function searchChunks(hoaId: string, query: string, topK = 5): Promise<{ content: string; section: string | null; score: number }[]> {
   const queryEmbedding = await embed(query);
 
   const chunks = await prisma.documentChunk.findMany({
@@ -213,16 +213,26 @@ export async function generateViolationNotice(hoaId: string, violation: {
   cureByDate?: string;
   fineAmount?: number;
   hoaName: string;
+  ruleCitation?: string;
 }): Promise<string> {
-  // Try to find relevant CC&R sections
+  // Build CC&R context — use stored citation if available, plus additional search for broader context
   let ccrContext = '';
   try {
+    const citationPrefix = violation.ruleCitation
+      ? `The confirmed relevant rule is:\n${violation.ruleCitation}\n\n`
+      : '';
     const chunks = await searchChunks(hoaId, `${violation.type} violation rules enforcement`, 3);
-    if (chunks.length > 0) {
-      ccrContext = `\n\nRelevant CC&R sections:\n${chunks.map(c => `[${c.section || 'General'}] ${c.content}`).join('\n\n')}`;
+    if (citationPrefix || chunks.length > 0) {
+      const chunkText = chunks.length > 0
+        ? chunks.map(c => `[${c.section || 'General'}] ${c.content}`).join('\n\n')
+        : '';
+      ccrContext = `\n\nRelevant CC&R sections:\n${citationPrefix}${chunkText}`;
     }
   } catch (e) {
-    // No embeddings available, proceed without
+    // No embeddings available — still use citation if present
+    if (violation.ruleCitation) {
+      ccrContext = `\n\nRelevant CC&R sections:\nThe confirmed relevant rule is:\n${violation.ruleCitation}`;
+    }
   }
 
   const prompt = `Generate a formal HOA violation notice letter with the following details:

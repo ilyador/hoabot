@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { router, adminProcedure, authedProcedure } from '../trpc.js';
 import { prisma } from '../db.js';
 import { TRPCError } from '@trpc/server';
+import { searchChunks } from '../ai.js';
 
 export const violationsRouter = router({
   list: adminProcedure
@@ -103,5 +104,36 @@ export const violationsRouter = router({
       if (!violation) throw new TRPCError({ code: 'NOT_FOUND' });
       await prisma.violation.delete({ where: { id: input.id } });
       return { success: true };
+    }),
+
+  suggestRule: adminProcedure
+    .input(z.object({ violationId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const violation = await prisma.violation.findFirst({ where: { id: input.violationId, hoaId: ctx.hoaId } });
+      if (!violation) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      try {
+        const query = `${violation.type} ${violation.description}`;
+        const chunks = await searchChunks(ctx.hoaId, query, 3);
+        const suggestions = chunks.filter(c => c.score > 0.3);
+        return { suggestions };
+      } catch {
+        return { suggestions: [] };
+      }
+    }),
+
+  saveRule: adminProcedure
+    .input(z.object({
+      violationId: z.string(),
+      ruleCitation: z.string().max(3000),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const violation = await prisma.violation.findFirst({ where: { id: input.violationId, hoaId: ctx.hoaId } });
+      if (!violation) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      return prisma.violation.update({
+        where: { id: input.violationId },
+        data: { ruleCitation: input.ruleCitation || null },
+      });
     }),
 });
