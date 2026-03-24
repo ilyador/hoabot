@@ -6,6 +6,7 @@ import type { Context } from '../server/src/trpc.js';
 // Track all test entities for cleanup
 const testUserIds: string[] = [];
 const testHoaIds: string[] = [];
+const testInviteIds: string[] = [];
 
 /**
  * Create a tRPC caller with the given context.
@@ -109,13 +110,59 @@ export async function setHoaSubscription(hoaId: string, data: {
 }
 
 /**
+ * Create a test unit in a HOA.
+ */
+export async function createTestUnit(hoaId: string, overrides: { address?: string; userId?: string | null } = {}) {
+  return prisma.unit.create({
+    data: {
+      hoaId,
+      address: overrides.address ?? `${Math.floor(Math.random() * 9999)} Test St`,
+      userId: overrides.userId ?? null,
+    },
+  });
+}
+
+/**
+ * Create a test invite.
+ */
+export async function createTestInvite(hoaId: string, invitedBy: string, overrides: {
+  email?: string;
+  role?: 'board_member' | 'homeowner';
+  unitId?: string;
+  status?: 'pending' | 'accepted' | 'revoked';
+  expiresAt?: Date;
+} = {}) {
+  const { randomBytes } = await import('crypto');
+  const invite = await prisma.invite.create({
+    data: {
+      hoaId,
+      email: overrides.email ?? `invite-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@hoabot-test.com`,
+      role: overrides.role ?? 'board_member',
+      unitId: overrides.unitId ?? null,
+      token: randomBytes(32).toString('base64url'),
+      status: overrides.status ?? 'pending',
+      invitedBy,
+      expiresAt: overrides.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+  testInviteIds.push(invite.id);
+  return invite;
+}
+
+/**
  * Clean up all test data created during tests.
  * Call in afterAll or afterEach.
  */
 export async function cleanupTestData() {
   // Delete in reverse dependency order
+  if (testInviteIds.length > 0) {
+    await prisma.invite.deleteMany({ where: { id: { in: testInviteIds } } });
+    testInviteIds.length = 0;
+  }
   if (testHoaIds.length > 0) {
-    // Unlink users from HOAs first
+    // Clean up invites, unit userId links, then users, then HOAs
+    await prisma.invite.deleteMany({ where: { hoaId: { in: testHoaIds } } });
+    await prisma.unit.updateMany({ where: { hoaId: { in: testHoaIds } }, data: { userId: null } });
     await prisma.user.updateMany({
       where: { hoaId: { in: testHoaIds } },
       data: { hoaId: null },

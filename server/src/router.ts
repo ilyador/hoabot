@@ -13,6 +13,7 @@ import { emailRouter } from './routers/email.js';
 import { homeownerRouter } from './routers/homeowner.js';
 import { xeroRouter } from './routers/xero.js';
 import { subscriptionRouter } from './routers/subscription.js';
+import { membersRouter } from './routers/members.js';
 
 export const appRouter = router({
   auth: authRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   homeowner: homeownerRouter,
   xero: xeroRouter,
   subscription: subscriptionRouter,
+  members: membersRouter,
 });
 
 export type AppRouter = typeof appRouter;

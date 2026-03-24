@@ -17,6 +17,8 @@ model User {
   hoa          Hoa?     @relation(fields: [hoaId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  invitedMembers Invite[] @relation("InvitedBy")
+  units        Unit[]
 
   @@index([hoaId])
 }
@@ -25,6 +27,12 @@ enum Role {
   admin
   board_member
   homeowner
+}
+
+enum InviteStatus {
+  pending
+  accepted
+  revoked
 }
 
 model Hoa {
@@ -64,6 +72,27 @@ model Hoa {
   announcements          Announcement[]
   violations             Violation[]
   maintenanceRequests    MaintenanceRequest[]
+  invites                Invite[]
+}
+
+model Invite {
+  id         String       @id @default(uuid())
+  hoaId      String
+  hoa        Hoa          @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  email      String
+  role       Role
+  unitId     String?
+  unit       Unit?        @relation(fields: [unitId], references: [id])
+  token      String       @unique
+  status     InviteStatus @default(pending)
+  invitedBy  String
+  inviter    User         @relation("InvitedBy", fields: [invitedBy], references: [id])
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([hoaId])
+  @@index([email, hoaId])
 }
 
 model Unit {
@@ -77,6 +106,7 @@ model Unit {
   ownerPhone String?
   monthlyDues Int     @default(0)
   userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
   xeroContactId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,6 +114,7 @@ model Unit {
   invoices  Invoice[]
   violations Violation[]
   maintenanceRequests MaintenanceRequest[]
+  invites   Invite[]
 
   @@index([hoaId])
 }

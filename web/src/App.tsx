@@ -14,6 +14,8 @@ import { AIAssistantPage } from './pages/AIAssistantPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PricingPage } from './pages/PricingPage';
 import { TrialExpiredPage } from './pages/TrialExpiredPage';
+import { JoinPage } from './pages/JoinPage';
+import { MembersPage } from './pages/MembersPage';
 import { Layout } from './components/Layout';
 
 export function App() {
@@ -34,6 +36,7 @@ export function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/join/:token" element={<JoinPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     );
@@ -58,6 +61,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/units" element={<UnitsPage />} />
+        <Route path="/members" element={<MembersPage />} />
         <Route path="/invoices" element={<InvoicesPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />

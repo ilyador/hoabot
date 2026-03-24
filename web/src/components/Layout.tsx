@@ -14,6 +14,7 @@ const navGroups = [
     label: 'Management',
     items: [
       { path: '/units', label: 'Units & Owners', icon: '🏠' },
+      { path: '/members', label: 'Members', icon: '👥', adminOnly: true },
       { path: '/invoices', label: 'Invoices', icon: '💰' },
       { path: '/violations', label: 'Violations', icon: '⚠️' },
       { path: '/maintenance', label: 'Maintenance', icon: '🔧' },
@@ -106,7 +107,7 @@ export function Layout({ user, children }: { user: any; children: React.ReactNod
               <div className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono, monospace)' }}>
                 {group.label}
               </div>
-              {group.items.map(item => {
+              {group.items.filter((item: any) => !item.adminOnly || user.role === 'admin' || user.role === 'board_member').map(item => {
                 const active = location.pathname === item.path;
                 return (
                   <Link

@@ -106,4 +106,90 @@ export const authRouter = router({
       trialEndsAt,
     };
   }),
+
+  validateInvite: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ input }) => {
+      const invite = await prisma.invite.findUnique({
+        where: { token: input.token },
+        include: { hoa: { select: { name: true } }, unit: { select: { address: true } } },
+      });
+      if (!invite) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invite not found' });
+      }
+      if (invite.status === 'accepted') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'This invite has already been used' });
+      }
+      if (invite.status === 'revoked') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'This invite has been revoked' });
+      }
+      if (invite.expiresAt < new Date()) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'This invite has expired' });
+      }
+
+      return {
+        email: invite.email,
+        role: invite.role,
+        hoaName: invite.hoa.name,
+        unitAddress: invite.unit?.address ?? null,
+      };
+    }),
+
+  registerWithInvite: publicProcedure
+    .input(z.object({
+      token: z.string(),
+      name: z.string().min(1),
+      password: z.string().min(8),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const invite = await prisma.invite.findUnique({ where: { token: input.token } });
+      if (!invite || invite.status !== 'pending' || invite.expiresAt < new Date()) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'This invite is no longer valid' });
+      }
+
+      const existing = await prisma.user.findUnique({ where: { email: invite.email } });
+      let user;
+
+      if (existing) {
+        if (existing.hoaId && existing.hoaId !== invite.hoaId) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'This email is already associated with another HOA' });
+        }
+        if (existing.hoaId === invite.hoaId) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'This user is already a member of this HOA' });
+        }
+        // Previously removed user (null hoaId) — re-link
+        user = await prisma.user.update({
+          where: { id: existing.id },
+          data: { hoaId: invite.hoaId, role: invite.role },
+        });
+      } else {
+        const passwordHash = await hashPassword(input.password);
+        user = await prisma.user.create({
+          data: {
+            email: invite.email,
+            passwordHash,
+            name: input.name,
+            role: invite.role,
+            hoaId: invite.hoaId,
+          },
+        });
+      }
+
+      if (invite.unitId) {
+        await prisma.unit.update({
+          where: { id: invite.unitId },
+          data: { userId: user.id },
+        });
+      }
+
+      await prisma.invite.update({
+        where: { id: invite.id },
+        data: { status: 'accepted', acceptedAt: new Date() },
+      });
+
+      const token = signToken(user.id);
+      ctx.res.cookie('token', token, cookieOptions());
+
+      return { user: { id: user.id, email: user.email, name: user.name, role: user.role, hoaId: user.hoaId } };
+    }),
 });
