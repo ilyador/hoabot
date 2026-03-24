@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — HOABot</title>
+<meta name="description" content="HOABot pricing. 30-day free trial, then $19.95/month. One plan, everything included.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sage: #4A5D3F;
+  --sage-light: #6B8A5E;
+  --sage-muted: #8BA07E;
+  --cream: #F7F3EC;
+  --cream-dark: #EDE7DB;
+  --warm-white: #FDFCF9;
+  --charcoal: #1E1E1E;
+  --charcoal-light: #3A3A3A;
+  --terra: #C4533A;
+  --terra-light: #E8826D;
+  --terra-muted: rgba(196, 83, 58, 0.08);
+  --text: #2C2C2C;
+  --text-light: #6B6B6B;
+  --text-faint: #9B9B9B;
+  --rule: rgba(74, 93, 63, 0.15);
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'Libre Franklin', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --nav-bg: #F7F3EC;
+  --footer-bg: #1E1E1E;
+}
+
+[data-theme="dark"] {
+  --sage: #8BA07E;
+  --sage-light: #A3BF96;
+  --sage-muted: #6B8A5E;
+  --cream: #1A1A18;
+  --cream-dark: #252523;
+  --warm-white: #222220;
+  --charcoal: #F7F3EC;
+  --charcoal-light: #E8E4DB;
+  --terra: #E8826D;
+  --terra-light: #C4533A;
+  --terra-muted: rgba(232, 130, 109, 0.12);
+  --text: #F0ECE4;
+  --text-light: #A09A8E;
+  --text-faint: #6B665C;
+  --rule: rgba(247, 243, 236, 0.1);
+  --nav-bg: #1A1A18;
+  --footer-bg: #121210;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sage: #8BA07E;
+    --sage-light: #A3BF96;
+    --sage-muted: #6B8A5E;
+    --cream: #1A1A18;
+    --cream-dark: #252523;
+    --warm-white: #222220;
+    --charcoal: #F7F3EC;
+    --charcoal-light: #E8E4DB;
+    --terra: #E8826D;
+    --terra-light: #C4533A;
+    --terra-muted: rgba(232, 130, 109, 0.12);
+    --text: #F0ECE4;
+    --text-light: #A09A8E;
+    --text-faint: #6B665C;
+    --rule: rgba(247, 243, 236, 0.1);
+    --nav-bg: #1A1A18;
+    --footer-bg: #121210;
+  }
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  padding-top: 70px;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 99;
+}
+
+a { color: var(--terra); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* === NAV === */
+nav {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--nav-bg);
+  z-index: 200;
+}
+nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.nav-logo:hover { text-decoration: none; }
+.nav-logo span { color: var(--sage); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a:not(.btn-cta) { font-size: 13px; font-weight: 500; color: var(--text-light); letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; }
+.nav-links a:not(.btn-cta):hover { color: var(--charcoal); text-decoration: none; }
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--sage);
+  color: var(--warm-white);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1.5px solid var(--sage);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.btn-cta:hover { background: var(--charcoal); border-color: var(--charcoal); text-decoration: none; }
+[data-theme="dark"] .btn-cta:hover { background: var(--sage-muted); border-color: var(--sage-muted); }
+
+/* === PRICING HERO === */
+.pricing-hero {
+  padding: 80px 0 40px;
+  text-align: center;
+}
+.pricing-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sage);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.pricing-label::before,
+.pricing-label::after {
+  content: '';
+  width: 24px;
+  height: 1.5px;
+  background: var(--sage);
+}
+.pricing-hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(36px, 5vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--charcoal);
+  margin-bottom: 16px;
+}
+.pricing-hero h1 em {
+  font-style: italic;
+  color: var(--sage);
+}
+.pricing-hero-sub {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-light);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* === PRICING CARD === */
+.pricing-section {
+  padding: 40px 0 100px;
+}
+.pricing-card {
+  max-width: 460px;
+  margin: 0 auto;
+  background: var(--warm-white);
+  border: 1.5px solid var(--rule);
+  border-radius: 6px;
+  padding: 52px 44px 44px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+}
+[data-theme="dark"] .pricing-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+}
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--sage);
+  border-radius: 6px 6px 0 0;
+}
+.pricing-trial {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sage);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(74, 93, 63, 0.08);
+  padding: 5px 14px;
+  border-radius: 2px;
+  margin-bottom: 28px;
+}
+[data-theme="dark"] .pricing-trial {
+  background: rgba(139, 160, 126, 0.12);
+}
+.pricing-amount {
+  font-family: var(--serif);
+  font-size: 64px;
+  letter-spacing: -0.03em;
+  color: var(--charcoal);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pricing-amount sup {
+  font-size: 28px;
+  vertical-align: super;
+  letter-spacing: 0;
+}
+.pricing-period {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+  margin-bottom: 36px;
+}
+.pricing-divider {
+  border: none;
+  border-top: 1px dotted var(--rule);
+  margin: 0 0 28px;
+}
+.pricing-features {
+  list-style: none;
+  text-align: left;
+  margin-bottom: 36px;
+  padding: 0;
+}
+.pricing-features li {
+  font-size: 14px;
+  color: var(--text);
+  padding: 9px 0;
+  border-bottom: 1px dotted var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pricing-features li:last-child { border-bottom: none; }
+.pricing-features li::before {
+  content: '✓';
+  color: var(--sage);
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.pricing-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 28px;
+  background: var(--sage);
+  color: var(--warm-white);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1.5px solid var(--sage);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  text-align: center;
+  line-height: 1.4;
+}
+.pricing-btn:hover { background: var(--charcoal); border-color: var(--charcoal); text-decoration: none; }
+[data-theme="dark"] .pricing-btn:hover { background: var(--sage-muted); border-color: var(--sage-muted); }
+.pricing-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* === FAQ === */
+.faq {
+  padding: 0 0 100px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.faq h2 {
+  font-family: var(--serif);
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--charcoal);
+  margin-bottom: 32px;
+  text-align: center;
+}
+.faq-item {
+  border-bottom: 1px solid var(--rule);
+  padding: 20px 0;
+}
+.faq-item:first-of-type { border-top: 1px solid var(--rule); }
+.faq-q {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+.faq-a {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-light);
+}
+
+/* === FOOTER === */
+footer {
+  padding: 40px 0;
+  background: var(--footer-bg);
+  color: rgba(247,243,236,0.4);
+  font-size: 13px;
+}
+footer .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+footer .nav-logo { color: var(--cream); font-size: 18px; }
+footer .nav-logo span { color: var(--sage-light); }
+.footer-links { display: flex; gap: 28px; }
+.footer-links a { color: rgba(247,243,236,0.4); font-size: 12px; text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--cream); }
+.footer-copy { font-size: 12px; }
+
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 14px;
+  line-height: 1;
+  transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.theme-toggle:hover { border-color: var(--sage); }
+
+/* === ANIMATIONS === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pricing-hero > .container > * {
+  animation: fadeUp 0.7s ease-out both;
+}
+.pricing-hero > .container > *:nth-child(1) { animation-delay: 0.1s; }
+.pricing-hero > .container > *:nth-child(2) { animation-delay: 0.2s; }
+.pricing-hero > .container > *:nth-child(3) { animation-delay: 0.35s; }
+.pricing-card {
+  animation: fadeUp 0.8s ease-out 0.4s both;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .nav-links a:not(.btn-cta) { display: none; }
+  .pricing-hero { padding: 60px 0 24px; }
+  .pricing-card { padding: 36px 24px 32px; }
+  .pricing-amount { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<nav>
+  <div class="container">
+    <a href="/landing/" class="nav-logo"><span>HOA</span>Bot</a>
+    <div class="nav-links">
+      <a href="/landing/#features">Features</a>
+      <a href="/landing/#how">How it works</a>
+      <a href="/landing/pricing.html">Pricing</a>
+      <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
+      <a href="/landing/#waitlist" class="btn-cta">Get Early Access</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><span id="theme-icon">🌙</span></button>
+    </div>
+  </div>
+</nav>
+
+<section class="pricing-hero">
+  <div class="container">
+    <div class="pricing-label">Pricing</div>
+    <h1>One plan. <em>No surprises.</em></h1>
+    <p class="pricing-hero-sub">Try everything free for 30 days. If it saves you time, keep it. If not, walk away — no questions, no exit interview.</p>
+  </div>
+</section>
+
+<section class="pricing-section">
+  <div class="container">
+    <div class="pricing-card">
+      <div style="text-align: center;">
+        <div class="pricing-trial">30-day free trial</div>
+        <div class="pricing-amount"><sup>$</sup>19<sup>.95</sup></div>
+        <div class="pricing-period">per month, after trial</div>
+      </div>
+      <hr class="pricing-divider">
+      <ul class="pricing-features">
+        <li>Unlimited units & owners</li>
+        <li>Dues tracking & invoicing</li>
+        <li>Violation management</li>
+        <li>AI-powered CC&R assistant</li>
+        <li>Document storage & search</li>
+        <li>Announcements & maintenance logs</li>
+        <li>All future features included</li>
+      </ul>
+      <a href="#" class="pricing-btn" id="subscribe-btn">Start Free Trial</a>
+      <p class="pricing-note">No credit card required to start. Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="container">
+    <h2>Questions you probably have</h2>
+    <div class="faq-item">
+      <div class="faq-q">What happens after the trial?</div>
+      <div class="faq-a">Your account stays active. If you want to keep using HOABot, it's $19.95/month via Stripe. If not, your data sits there until you're ready — or you can export and leave.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is there a per-unit fee?</div>
+      <div class="faq-a">No. One price. Whether you manage 10 units or 500, it's the same $19.95. We're not going to nickel-and-dime a volunteer board treasurer.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel anytime?</div>
+      <div class="faq-a">Yes. Cancel from your account settings. No phone calls, no retention specialists, no guilt. You're an adult who volunteers to run a neighborhood — we respect that.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Why so cheap?</div>
+      <div class="faq-a">Because HOA boards are run by volunteers who already do too much for free. This tool should cost less than a bad pizza. We'd rather have 1,000 happy boards than 10 enterprise contracts.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <a href="/landing/" class="nav-logo"><span>HOA</span>Bot</a>
+    <div class="footer-links">
+      <a href="/landing/#features">Features</a>
+      <a href="/landing/pricing.html">Pricing</a>
+      <a href="/app">App</a>
+      <a href="https://x.com/hoaboabot" target="_blank">@hoaboabot</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 HOABot</div>
+  </div>
+</footer>
+
+<script src="/landing/theme.js"></script>
+</body>
+</html>

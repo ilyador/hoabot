@@ -73,12 +73,37 @@ export const authRouter = router({
   }),
 
   me: authedProcedure.query(async ({ ctx }) => {
+    let subscriptionStatus: string | null = null;
+    let trialEndsAt: string | null = null;
+
+    if (ctx.user.hoaId) {
+      const hoa = await prisma.hoa.findUnique({
+        where: { id: ctx.user.hoaId },
+        select: { subscriptionStatus: true, trialEndsAt: true },
+      });
+      if (hoa) {
+        // Auto-expire trials that have passed
+        if (hoa.subscriptionStatus === 'trialing' && hoa.trialEndsAt && hoa.trialEndsAt < new Date()) {
+          await prisma.hoa.update({
+            where: { id: ctx.user.hoaId },
+            data: { subscriptionStatus: 'trial_expired' },
+          });
+          subscriptionStatus = 'trial_expired';
+        } else {
+          subscriptionStatus = hoa.subscriptionStatus;
+        }
+        trialEndsAt = hoa.trialEndsAt?.toISOString() ?? null;
+      }
+    }
+
     return {
       id: ctx.user.id,
       email: ctx.user.email,
       name: ctx.user.name,
       role: ctx.user.role,
       hoaId: ctx.user.hoaId,
+      subscriptionStatus,
+      trialEndsAt,
     };
   }),
 });

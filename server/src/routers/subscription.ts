@@ -1,4 +1,4 @@
-import { router, adminProcedure } from '../trpc.js';
+import { router, hoaAdminProcedure } from '../trpc.js';
 import { prisma } from '../db.js';
 import { TRPCError } from '@trpc/server';
 import Stripe from 'stripe';
@@ -6,7 +6,6 @@ import Stripe from 'stripe';
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const PRICE_ID = process.env.STRIPE_PRICE_ID || '';
 const BASE_URL = process.env.VITE_API_URL || 'http://localhost:5174';
-const TRIAL_DAYS = 30;
 
 function getStripe(): Stripe {
   if (!STRIPE_SECRET || STRIPE_SECRET === 'sk_test_placeholder') {
@@ -17,7 +16,7 @@ function getStripe(): Stripe {
 
 export const subscriptionRouter = router({
   // Get subscription status
-  status: adminProcedure.query(async ({ ctx }) => {
+  status: hoaAdminProcedure.query(async ({ ctx }) => {
     const hoa = await prisma.hoa.findUnique({ where: { id: ctx.hoaId } });
     if (!hoa) throw new TRPCError({ code: 'NOT_FOUND' });
 
@@ -32,7 +31,7 @@ export const subscriptionRouter = router({
   }),
 
   // Create a checkout session to start subscription
-  createCheckout: adminProcedure.mutation(async ({ ctx }) => {
+  createCheckout: hoaAdminProcedure.mutation(async ({ ctx }) => {
     const stripe = getStripe();
     if (!PRICE_ID) throw new TRPCError({ code: 'PRECONDITION_FAILED', message: 'STRIPE_PRICE_ID not configured' });
 
@@ -61,7 +60,6 @@ export const subscriptionRouter = router({
       mode: 'subscription',
       line_items: [{ price: PRICE_ID, quantity: 1 }],
       subscription_data: {
-        trial_period_days: TRIAL_DAYS,
         metadata: { hoaId: ctx.hoaId },
       },
       success_url: `${BASE_URL}/settings?subscription=success`,
@@ -73,7 +71,7 @@ export const subscriptionRouter = router({
   }),
 
   // Get Stripe billing portal URL
-  portalUrl: adminProcedure.mutation(async ({ ctx }) => {
+  portalUrl: hoaAdminProcedure.mutation(async ({ ctx }) => {
     const stripe = getStripe();
     const hoa = await prisma.hoa.findUnique({ where: { id: ctx.hoaId } });
     if (!hoa?.stripeCustomerId) {

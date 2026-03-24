@@ -18,6 +18,8 @@ export const hoaRouter = router({
         data: {
           name: input.name,
           address: input.address,
+          subscriptionStatus: 'trialing',
+          trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
       });
 

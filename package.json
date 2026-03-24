@@ -10,6 +10,8 @@
     "build:web": "vite build --config web/vite.config.ts",
     "start": "node dist/server/src/index.js",
     "dev:landing": "npx serve landing -l tcp://0.0.0.0:4200",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "content": "tsx content/src/post.ts",
@@ -75,6 +77,7 @@
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^4.1.1"
   }
 }

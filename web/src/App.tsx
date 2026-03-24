@@ -12,6 +12,8 @@ import { ViolationsPage } from './pages/ViolationsPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { AIAssistantPage } from './pages/AIAssistantPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { PricingPage } from './pages/PricingPage';
+import { TrialExpiredPage } from './pages/TrialExpiredPage';
 import { Layout } from './components/Layout';
 
 export function App() {
@@ -46,6 +48,11 @@ export function App() {
     );
   }
 
+  const BLOCKED_STATUSES = ['trial_expired', 'past_due', 'canceled', 'unpaid'];
+  if (user.subscriptionStatus && BLOCKED_STATUSES.includes(user.subscriptionStatus)) {
+    return <TrialExpiredPage user={user} status={user.subscriptionStatus} />;
+  }
+
   return (
     <Layout user={user}>
       <Routes>
@@ -58,6 +65,7 @@ export function App() {
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/ai" element={<AIAssistantPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Layout>

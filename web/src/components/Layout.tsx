@@ -33,6 +33,12 @@ const navGroups = [
       { path: '/settings', label: 'Settings', icon: '⚙️' },
     ],
   },
+  {
+    label: 'Account',
+    items: [
+      { path: '/pricing', label: 'Pricing', icon: '💳' },
+    ],
+  },
 ];
 
 export function Layout({ user, children }: { user: any; children: React.ReactNode }) {
